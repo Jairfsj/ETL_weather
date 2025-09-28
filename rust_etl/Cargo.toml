@@ -6,4 +6,6 @@ edition = "2021"
 
 [dependencies]
 tokio = { vesion = "1", features = ["full"]}
-reqwest = { vesion = "1.0", features = ["json"]}ii
+reqwest = { vesion = "1.0", features = ["json", 'gzip'] }
+serde = { version = "1.0", features = ["derive""] }
+
