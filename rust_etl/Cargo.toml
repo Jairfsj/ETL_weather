@@ -1,0 +1,9 @@
+[package]
+
+name = "rust_etl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { vesion = "1", features = ["full"]}
+reqwest = { vesion = "1.0", features = ["json"]}ii
