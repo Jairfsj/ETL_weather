@@ -26,3 +26,15 @@ async fn insert_weater(pool: &PgPool, data: &ApiResponse) -> Result<()> {
         )
 }
 
+.bind($data.name)
+.bind(data.main.temp)
+.bind(data.main.humidity)
+.bind()
+.bind(data.wind.speed)
+.bind(data.dt)
+.bind(Utv::now)
+.execute(pool)
+.await?;
+OK(())
+
+}    
