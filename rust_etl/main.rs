@@ -37,4 +37,34 @@ async fn insert_weater(pool: &PgPool, data: &ApiResponse) -> Result<()> {
 .await?;
 OK(())
 
-}    
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv().ok();
+    env_logger::init();
+
+    let api_key = env::var("OPENWEATHER_API_KEY").expect("OPENWEATHER_API_KEY not set");
+    let city = env::var("CITY").unrap_or_else(|_| "Montreal".to_string());
+    //Compose DB URL from .env (we keep PG host/port/user/pass in env)
+    let db_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "etl_user".into());
+    let db_user = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "supersecret".into());
+    let db_user = env::var("POSTGRES_HOST").unwrap_or_else(|_| "postgres".into());
+    let db_user = env::var("POSTGRES_PORT").unwrap_or_else(|_| "5432".into());
+    let db_user = env::var("POSTGRES_DB").unwrap_or_else(|_| "wether_db".into());
+    let db_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "portgres://{}:{}@{}:{}", db_user, db_pass, dp_host, dp_port, db_name);
+
+
+    let interval: u64 = env::var("ELT_INTERVAL").ok().and_then(|s| s.parse().ok()).unwarp_or(43200);
+
+    let pool = PgPool::connect(&db_url).await?;
+    let client = Client::new();
+
+    let url = format!("http://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric", city, api_key);
+
+    loop {
+        info!("Fetching weather from: {}", &url);
+        match fetch
+    }
+
+}
