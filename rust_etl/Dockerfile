@@ -5,7 +5,7 @@ WORKDIR /usr/src/rust_etl
 
 #cache dependencies
 
-COPY Cargo.toml Cargo.lock ./Cargo.toml
+COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && echo "fn main () { println!(\"dummy\"); }" > src/main.rs 
 RUN cargo build --release || true 
 
