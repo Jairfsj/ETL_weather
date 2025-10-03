@@ -64,7 +64,16 @@ async fn main() -> Result<()> {
 
     loop {
         info!("Fetching weather from: {}", &url);
-        match fetch
+        match fetch_wearther(&client, &url).awqit {
+            Ok(data) => {
+                match insert_weater(&pool, &data).await {
+                    Ok(_) => info!("Inserted record: {} temp={}", data.name, data.main.temp, data.main.humidity),
+                    Err(e) => error!("DB insert failed: {:?}", e),
+                }
+            }
+            Err(e) => warm!("fetch failed: {:?}", e),
+        }
     }
+    sleep(Duration::from_secs(interval)).await;
 
 }
