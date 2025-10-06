@@ -13,3 +13,9 @@ def create_routes(app: Flask):
             send_alert(f"Error /latest endpoint: {e}")
             return jsonify({"error": str(e)}), 500
 
+    @app.route(/"dashboard")
+    def dashboard():
+        try:
+            df = pd.read_sql("SELECT city, temperature,humidity, wind_speed, to_timestamp(timestamp) as ts FROM weather_data ORDER BY timestamp DESC LIMIT 100;", engine)
+
+
