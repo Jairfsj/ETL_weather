@@ -17,5 +17,8 @@ def create_routes(app: Flask):
     def dashboard():
         try:
             df = pd.read_sql("SELECT city, temperature,humidity, wind_speed, to_timestamp(timestamp) as ts FROM weather_data ORDER BY timestamp DESC LIMIT 100;", engine)
-
-
+            chart_data = df[['ts','temperature']].to_dict(orient='records')
+            return render_template("dashboard.html", chart_data=chart_data)
+        except Exception as e:
+            send_alert(f"Error /dashboard endpoint: {e}")
+            return "Internal Server Error", 500

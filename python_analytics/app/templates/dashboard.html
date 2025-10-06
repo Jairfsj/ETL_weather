@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Weather Dashboard</title>
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </head>
+  <body>
+  <h2>Weather Dashboard</h2>
+  <div id="chart"></div>
+  <script>
+    var x = {{ chart_data | map(attribute='ts') | list }};
+    var y = {{chart_data | map(attribute='temperature') | list}};
+    var trace = { x: x, y: y, type: 'scatter', mode: 'lines+markers' };
+    Plotly.newPlot('chart', [trace]);
+  </script>
+  </body>
+</html>
