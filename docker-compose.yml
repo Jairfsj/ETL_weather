@@ -14,18 +14,16 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     
     volumes:
-    
-      - pgdata:/var/lib/postgresql/data 
+      - pgdata:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      rm -rf ~/.local/share/nvim
     
     ports:
     
       - "${POSTGRES_PORT}:5432"
   
   rust_etl:
-     
-    build: .rust_etl
+
+    build: ./rust_etl
     container_name: rust_etl
     env_file: .env
     depends_on:
