@@ -1,115 +1,104 @@
-use anyhow::Result;
-use dotenvy::dotenv;
+mod models;
+mod services;
+mod config;
+mod utils;
+
+use crate::{
+    config::app_config::AppConfig,
+    services::{database::DatabaseService, weather_service::WeatherService},
+    utils::{logging, setup_panic_hook},
+};
+use anyhow::{Result, Context};
 use log::{info, warn, error};
-use reqwest::Client;
-use serde::Deserialize;
-use sqlx::PgPool;
-use std::env;
-use tokio::time::{sleep, Duration};
-
-#[derive(Deserialize)]
-struct WeatherMain {
-    temp: f64,
-    humidity: i32,
-    pressure: i32,
-    feels_like: f64,
-}
-
-#[derive(Deserialize)]
-struct Wind {
-    speed: f64,
-    deg: Option<f64>,
-}
-
-#[derive(Deserialize)]
-struct Weather {
-    id: i32,
-    main: String,
-    description: String,
-    icon: String,
-}
-
-#[derive(Deserialize)]
-struct ApiResponse {
-    name: String,
-    main: WeatherMain,
-    wind: Wind,
-    weather: Vec<Weather>,
-    dt: i64,
-    timezone: i32,
-    cod: i32,
-}
-
-async fn fetch_weather(client: &Client, url: &str) -> Result<ApiResponse> {
-    let resp = client.get(url).send().await?.error_for_status()?;
-    Ok(resp.json().await?)
-}
-
-async fn insert_weather(pool: &PgPool, data: &ApiResponse) -> Result<()> {
-    let weather = data.weather.first();
-
-    sqlx::query(
-        "INSERT INTO weather_data (city, temperature, feels_like, humidity, pressure, wind_speed, wind_direction, weather_main, weather_description, weather_icon, timestamp, timezone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
-    )
-    .bind(&data.name)
-    .bind(data.main.temp)
-    .bind(data.main.feels_like)
-    .bind(data.main.humidity)
-    .bind(data.main.pressure)
-    .bind(data.wind.speed)
-    .bind(data.wind.deg)
-    .bind(weather.map(|w| &w.main))
-    .bind(weather.map(|w| &w.description))
-    .bind(weather.map(|w| &w.icon))
-    .bind(data.dt)
-    .bind(data.timezone)
-    .execute(pool)
-    .await?;
-    Ok(())
-}
+use std::time::Duration;
+use tokio::signal::unix::{signal, SignalKind};
+use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
-    env_logger::init();
+    setup_panic_hook();
 
-    let api_key = env::var("OPENWEATHER_API_KEY").expect("OPENWEATHER_API_KEY not set");
-    let city = env::var("CITY").unwrap_or_else(|_| "Montreal".to_string());
+    // Initialize logging
+    logging::init_logger();
 
-    // Compose DB URL from .env
-    let db_user = env::var("POSTGRES_USER").unwrap_or_else(|_| "etl_user".into());
-    let db_pass = env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "supersecret".into());
-    let db_host = env::var("POSTGRES_HOST").unwrap_or_else(|_| "postgres".into());
-    let db_port = env::var("POSTGRES_PORT").unwrap_or_else(|_| "5432".into());
-    let db_name = env::var("POSTGRES_DB").unwrap_or_else(|_| "weather_db".into());
-    let db_url = format!("postgres://{}:{}@{}:{}/{}", db_user, db_pass, db_host, db_port, db_name);
+    info!("🚀 Starting Montreal Weather ETL Service v1.0.0");
 
-    let interval: u64 = env::var("ETL_INTERVAL")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(43200);
+    // Load configuration
+    let config = AppConfig::from_env()
+        .context("Failed to load application configuration")?;
 
-    let pool = PgPool::connect(&db_url).await?;
-    let client = Client::new();
+    info!("⚙️  Configuration loaded:");
+    info!("   📍 City: {}", config.city);
+    info!("   ⏱️  Collection interval: {} seconds", config.interval_seconds);
+    info!("   📊 Log level: {}", config.log_level);
 
-    let url = format!("http://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric", city, api_key);
+    // Initialize services
+    let database = DatabaseService::new(&config.database_url)
+        .await
+        .context("Failed to initialize database connection")?;
+
+    let weather_service = WeatherService::new(config.api_key.clone());
+
+    // Health check
+    database.health_check()
+        .await
+        .context("Database health check failed")?;
+
+    info!("✅ All services initialized successfully");
+    info!("🔄 Starting weather data collection loop...");
+
+    // Setup graceful shutdown
+    let mut sigterm = signal(SignalKind::terminate())
+        .context("Failed to register SIGTERM handler")?;
+
+    let mut sigint = signal(SignalKind::interrupt())
+        .context("Failed to register SIGINT handler")?;
 
     loop {
-        info!("Fetching weather from: {}", &url);
-        match fetch_weather(&client, &url).await {
-            Ok(data) => {
-                match insert_weather(&pool, &data).await {
-                    Ok(_) => {
-                        let weather_desc = data.weather.first().map(|w| &w.description).unwrap_or("unknown");
-                        let weather_main = data.weather.first().map(|w| &w.main).unwrap_or("unknown");
-                        info!("✅ Weather data inserted: {} - 🌡️ {:.1}°C (feels like {:.1}°C), 💧 {}%, 🌬️ {:.1}km/h, ☁️ {} ({})",
-                              data.name, data.main.temp, data.main.feels_like, data.main.humidity, data.wind.speed, weather_main, weather_desc);
-                    },
-                    Err(e) => error!("❌ Database insert failed: {:?}", e),
+        tokio::select! {
+            // Main ETL loop
+            _ = async {
+                match weather_service.fetch_weather(&config.city).await {
+                    Ok(weather_data) => {
+                        match database.insert_weather_data(&weather_data).await {
+                            Ok(_) => {
+                                info!(
+                                    "✅ Weather data inserted: {} - 🌡️ {:.1}°C (feels {:.1}°C), 💧 {}%, 🌬️ {:.1}km/h, ☁️ {} ({})",
+                                    weather_data.city,
+                                    weather_data.temperature,
+                                    weather_data.feels_like,
+                                    weather_data.humidity,
+                                    weather_data.wind_speed,
+                                    weather_data.weather_main,
+                                    weather_data.weather_description
+                                );
+                            }
+                            Err(e) => {
+                                error!("❌ Database insert failed: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        warn!("⚠️  Failed to fetch weather data: {}", e);
+                        warn!("   Will retry in {} seconds...", config.interval_seconds);
+                    }
                 }
+
+                sleep(Duration::from_secs(config.interval_seconds)).await;
+            } => {}
+
+            // Handle shutdown signals
+            _ = sigterm.recv() => {
+                info!("🛑 Received SIGTERM signal");
+                break;
             }
-            Err(e) => warn!("Fetch failed: {:?}", e),
+            _ = sigint.recv() => {
+                info!("🛑 Received SIGINT signal");
+                break;
+            }
         }
-        sleep(Duration::from_secs(interval)).await;
     }
+
+    info!("👋 Montreal Weather ETL Service stopped gracefully");
+    Ok(())
 }
