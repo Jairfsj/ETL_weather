@@ -3,18 +3,109 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Weather Dashboard</title>
-    <link href="css/style.css" rel="stylesheet">
+    <title>Weather Dashboard - Montreal</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      .header { text-align: center; color: #333; margin-bottom: 30px; }
+      .current-weather { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+      .weather-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+      .weather-item { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+      .weather-value { font-size: 2em; font-weight: bold; color: #007bff; }
+      .weather-label { font-size: 0.9em; color: #666; text-transform: uppercase; }
+      .chart-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+      .chart-title { color: #333; margin-bottom: 15px; }
+    </style>
   </head>
   <body>
-  <h2>Weather Dashboard</h2>
-  <div id="chart"></div>
-  <script>
-    var x = {{ chart_data | map(attribute='ts') | list }};
-    var y = {{chart_data | map(attribute='temperature') | list}};
-    var trace = { x: x, y: y, type: 'scatter', mode: 'lines+markers' };
-    Plotly.newPlot('chart', [trace]);
-  </script>
+    <div class="container">
+      <div class="header">
+        <h1>🌤️ Montreal Weather Dashboard</h1>
+        <p>Real-time weather data from OpenWeatherMap API</p>
+      </div>
+
+      {% if latest_weather %}
+      <div class="current-weather">
+        <h2>Current Weather in {{ latest_weather.city }}</h2>
+        <div class="weather-grid">
+          <div class="weather-item">
+            <div class="weather-value">{{ "%.1f"|format(latest_weather.temperature) }}°C</div>
+            <div class="weather-label">Temperature</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-value">{{ "%.1f"|format(latest_weather.feels_like) }}°C</div>
+            <div class="weather-label">Feels Like</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-value">{{ latest_weather.humidity }}%</div>
+            <div class="weather-label">Humidity</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-value">{{ "%.1f"|format(latest_weather.wind_speed) }} km/h</div>
+            <div class="weather-label">Wind Speed</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-value">{{ latest_weather.pressure }} hPa</div>
+            <div class="weather-label">Pressure</div>
+          </div>
+          <div class="weather-item">
+            <div class="weather-value">{{ latest_weather.weather_main }}</div>
+            <div class="weather-label">{{ latest_weather.weather_description }}</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="chart-container">
+        <h3 class="chart-title">Temperature Trends (°C)</h3>
+        <div id="temp-chart"></div>
+      </div>
+
+      <div class="chart-container">
+        <h3 class="chart-title">Humidity Trends (%)</h3>
+        <div id="humidity-chart"></div>
+      </div>
+    </div>
+
+    <script>
+      // Temperature Chart
+      var tempData = {{ chart_data.temperature | tojson }};
+      if (tempData.length > 0) {
+        var tempTrace = {
+          x: tempData.map(d => d.ts),
+          y: tempData.map(d => d.temperature),
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: 'Temperature (°C)',
+          line: {color: '#ff6b6b'}
+        };
+        var layout = {
+          margin: {l: 50, r: 50, t: 20, b: 50},
+          xaxis: {title: 'Time'},
+          yaxis: {title: 'Temperature (°C)'}
+        };
+        Plotly.newPlot('temp-chart', [tempTrace], layout);
+      }
+
+      // Humidity Chart
+      var humidityData = {{ chart_data.humidity | tojson }};
+      if (humidityData.length > 0) {
+        var humidityTrace = {
+          x: humidityData.map(d => d.ts),
+          y: humidityData.map(d => d.humidity),
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: 'Humidity (%)',
+          line: {color: '#4ecdc4'}
+        };
+        var humidityLayout = {
+          margin: {l: 50, r: 50, t: 20, b: 50},
+          xaxis: {title: 'Time'},
+          yaxis: {title: 'Humidity (%)'}
+        };
+        Plotly.newPlot('humidity-chart', [humidityTrace], humidityLayout);
+      }
+    </script>
   </body>
 </html>

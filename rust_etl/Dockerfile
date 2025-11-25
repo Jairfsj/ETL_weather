@@ -10,7 +10,7 @@ RUN cargo build --release
 # runtime
 
 FROM debian:bullseye-slim
-RUN apt-get update && apt-get install -y ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates tzdata libssl1.1 && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/src/rust_etl/target/release/rust_etl /usr/local/bin/rust_etl
 WORKDIR /app
 ENV RUST_LOG=info

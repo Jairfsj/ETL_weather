@@ -10,12 +10,23 @@ use tokio::time::{sleep, Duration};
 #[derive(Deserialize)]
 struct WeatherMain {
     temp: f64,
-    humidity: i32
+    humidity: i32,
+    pressure: i32,
+    feels_like: f64,
 }
 
 #[derive(Deserialize)]
 struct Wind {
-    speed: f64
+    speed: f64,
+    deg: Option<f64>,
+}
+
+#[derive(Deserialize)]
+struct Weather {
+    id: i32,
+    main: String,
+    description: String,
+    icon: String,
 }
 
 #[derive(Deserialize)]
@@ -23,7 +34,10 @@ struct ApiResponse {
     name: String,
     main: WeatherMain,
     wind: Wind,
-    dt: i64
+    weather: Vec<Weather>,
+    dt: i64,
+    timezone: i32,
+    cod: i32,
 }
 
 async fn fetch_weather(client: &Client, url: &str) -> Result<ApiResponse> {
@@ -32,14 +46,23 @@ async fn fetch_weather(client: &Client, url: &str) -> Result<ApiResponse> {
 }
 
 async fn insert_weather(pool: &PgPool, data: &ApiResponse) -> Result<()> {
+    let weather = data.weather.first();
+
     sqlx::query(
-        "INSERT INTO weather_data (city, temperature, humidity, wind_speed, timestamp) VALUES ($1, $2, $3, $4, $5)"
+        "INSERT INTO weather_data (city, temperature, feels_like, humidity, pressure, wind_speed, wind_direction, weather_main, weather_description, weather_icon, timestamp, timezone) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
     )
     .bind(&data.name)
     .bind(data.main.temp)
+    .bind(data.main.feels_like)
     .bind(data.main.humidity)
+    .bind(data.main.pressure)
     .bind(data.wind.speed)
+    .bind(data.wind.deg)
+    .bind(weather.map(|w| &w.main))
+    .bind(weather.map(|w| &w.description))
+    .bind(weather.map(|w| &w.icon))
     .bind(data.dt)
+    .bind(data.timezone)
     .execute(pool)
     .await?;
     Ok(())
@@ -76,8 +99,13 @@ async fn main() -> Result<()> {
         match fetch_weather(&client, &url).await {
             Ok(data) => {
                 match insert_weather(&pool, &data).await {
-                    Ok(_) => info!("Inserted record: {} temp={}, humidity={}", data.name, data.main.temp, data.main.humidity),
-                    Err(e) => error!("DB insert failed: {:?}", e),
+                    Ok(_) => {
+                        let weather_desc = data.weather.first().map(|w| &w.description).unwrap_or("unknown");
+                        let weather_main = data.weather.first().map(|w| &w.main).unwrap_or("unknown");
+                        info!("✅ Weather data inserted: {} - 🌡️ {:.1}°C (feels like {:.1}°C), 💧 {}%, 🌬️ {:.1}km/h, ☁️ {} ({})",
+                              data.name, data.main.temp, data.main.feels_like, data.main.humidity, data.wind.speed, weather_main, weather_desc);
+                    },
+                    Err(e) => error!("❌ Database insert failed: {:?}", e),
                 }
             }
             Err(e) => warn!("Fetch failed: {:?}", e),
