@@ -49,9 +49,36 @@ impl DatabaseService {
     }
 
     pub async fn get_latest_weather(&self, city: &str) -> Result<Option<WeatherData>> {
-        let record = sqlx::query!(
-            r#"
-            SELECT
+        // Using query instead of query! to avoid compile-time database verification
+        let record: Option<(Option<String>, f64, Option<f64>, i32, Option<i32>, f64, Option<f64>, Option<String>, Option<String>, Option<String>, i64, Option<i32>)> =
+            sqlx::query_as(
+                r#"
+                SELECT
+                    city,
+                    temperature,
+                    feels_like,
+                    humidity,
+                    pressure,
+                    wind_speed,
+                    wind_direction,
+                    weather_main,
+                    weather_description,
+                    weather_icon,
+                    timestamp,
+                    timezone
+                FROM weather_data
+                WHERE city = $1
+                ORDER BY timestamp DESC
+                LIMIT 1
+                "#
+            )
+            .bind(city)
+            .fetch_optional(&self.pool)
+            .await
+            .context("Failed to fetch latest weather data")?;
+
+        Ok(record.map(|(city, temperature, feels_like, humidity, pressure, wind_speed, wind_direction, weather_main, weather_description, weather_icon, timestamp, timezone)| {
+            WeatherData {
                 city,
                 temperature,
                 feels_like,
@@ -63,32 +90,10 @@ impl DatabaseService {
                 weather_description,
                 weather_icon,
                 timestamp,
-                timezone
-            FROM weather_data
-            WHERE city = $1
-            ORDER BY timestamp DESC
-            LIMIT 1
-            "#,
-            city
-        )
-        .fetch_optional(&self.pool)
-        .await
-        .context("Failed to fetch latest weather data")?
-        .map(|row| WeatherData {
-            city: row.city,
-            temperature: row.temperature,
-            feels_like: row.feels_like,
-            humidity: row.humidity,
-            pressure: row.pressure,
-            wind_speed: row.wind_speed,
-            wind_direction: row.wind_direction,
-            weather_main: row.weather_main,
-            weather_description: row.weather_description,
-            weather_icon: row.weather_icon,
-            timestamp: row.timestamp,
-            timezone: row.timezone,
-            created_at: None,
-        });
+                timezone,
+                created_at: None,
+            }
+        }))
 
         Ok(record)
     }
