@@ -20,7 +20,8 @@ target
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# .env - Agora commitado para CI/CD funcionar 
+# .env - Commitado para CI/CD funcionar (contém valores padrão)
+# .env.example - Arquivo de exemplo para usuários copiarem 
 target/
 __pycache__/
 *.pyc 
