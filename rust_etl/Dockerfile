@@ -2,16 +2,15 @@
 
 FROM rust:1.85 as builder
 WORKDIR /usr/src/rust_etl
-
+RUN apt-get update && apt-get install -y libssl-dev pkg-config && rm -rf /var/lib/apt/lists/*
 # Build the application
 COPY . .
 RUN cargo build --release
-RUN ldd target/release/rust_etl
 
 # runtime
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates tzdata openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates tzdata libssl3 && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/src/rust_etl/target/release/rust_etl /usr/local/bin/rust_etl
 WORKDIR /app
 ENV RUST_LOG=info
