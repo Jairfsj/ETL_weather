@@ -53,10 +53,10 @@ class DatabaseService:
                        weather_icon, timestamp, timezone, created_at
                 FROM weather_data
                 ORDER BY timestamp DESC
-                LIMIT :limit
-            """
+                LIMIT %s
+            """ % limit
 
-            df = pd.read_sql(query, self.engine, params={'limit': limit})
+            df = pd.read_sql(query, self.engine)
 
             weather_data = []
             for _, row in df.iterrows():
