@@ -8,12 +8,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Verify .env file exists
+      run: |
+        if [ ! -f .env ]; then
+          echo "Error: .env file not found!"
+          ls -la
+          exit 1
+        else
+          echo ".env file found:"
+          cat .env
+        fi
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
     - name: Build and start services
       run: |
+        docker compose config  # Verify docker-compose can read the configuration
         docker compose up -d --build postgres
         docker compose up -d --build python_analytics
         # Wait for services to be healthy
