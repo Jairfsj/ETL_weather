@@ -4,6 +4,7 @@ FROM rust:latest as builder
 WORKDIR /usr/src/rust_etl
 # Build the application
 COPY . .
+ENV DATABASE_URL=postgres://etl_user:supersecret@postgres:5432/weather_db
 RUN cargo build --release
 
 # runtime
