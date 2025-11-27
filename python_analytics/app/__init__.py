@@ -25,14 +25,26 @@ def create_app(config_class=None) -> Flask:
     # Load configuration
     if config_class is None:
         config_class = Config
-    app.config.from_object(config_class)
+
+    config_obj = config_class()
+
+    # Set configuration manually to avoid property issues
+    app.config['SECRET_KEY'] = config_obj.SECRET_KEY
+    app.config['DEBUG'] = config_obj.DEBUG
+    app.config['DATABASE_URL'] = config_obj.DATABASE_URL
+    app.config['OPENWEATHER_API_KEY'] = config_obj.OPENWEATHER_API_KEY
+    app.config['CITY'] = config_obj.CITY
+    app.config['ETL_INTERVAL'] = config_obj.ETL_INTERVAL
+    app.config['HOST'] = config_obj.HOST
+    app.config['PORT'] = config_obj.PORT
+    app.config['TELEGRAM_TOKEN'] = config_obj.TELEGRAM_TOKEN
+    app.config['TELEGRAM_CHAT_ID'] = config_obj.TELEGRAM_CHAT_ID
 
     # Initialize extensions
     CORS(app)
 
     # Initialize services
-    config_obj = config_class()
-    db_service = DatabaseService(config_obj.DATABASE_URL)
+    db_service = DatabaseService(app.config['DATABASE_URL'])
     alert_service = AlertService()
 
     # Store services in app context

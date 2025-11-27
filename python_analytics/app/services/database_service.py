@@ -116,10 +116,15 @@ class DatabaseService:
     def health_check(self) -> bool:
         """Check database connectivity"""
         try:
-            with self.get_connection() as conn:
-                conn.execute(text("SELECT 1"))
+            logger.info(f"Testing connection to: {self.connection_string}")
+            # Simple connection test
+            conn = self.engine.connect()
+            conn.execute(text("SELECT 1"))
+            conn.close()
+            logger.info("Database health check passed")
             return True
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
+            logger.error(f"Connection string type: {type(self.connection_string)}")
             return False
 
