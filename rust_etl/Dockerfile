@@ -9,9 +9,8 @@ RUN cargo build --release
 
 # runtime
 
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates tzdata openssl && \
-    ln -s /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib/libssl.so.3 && rm -rf /var/lib/apt/lists/*
+FROM debian:bullseye-slim
+RUN apt-get update && apt-get install -y ca-certificates tzdata libssl3 && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/src/rust_etl/target/release/rust_etl /usr/local/bin/rust_etl
 WORKDIR /app
 ENV RUST_LOG=info
