@@ -18,7 +18,7 @@ jobs:
         docker compose up -d --build python_analytics
         # Wait for services to be healthy
         timeout 60 bash -c 'until docker compose ps postgres | grep -q "healthy"; do sleep 2; done'
-        timeout 60 bash -c 'until curl -f http://localhost:5050/api/v1/weather/health; do sleep 2; done'
+        timeout 60 bash -c 'until curl -f http://localhost:5000/api/v1/weather/health; do sleep 2; done'
 
     - name: Run Python tests
       run: |
