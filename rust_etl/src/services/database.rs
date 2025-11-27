@@ -94,8 +94,6 @@ impl DatabaseService {
                 created_at: None,
             }
         }))
-
-        Ok(record)
     }
 
     pub async fn health_check(&self) -> Result<()> {
