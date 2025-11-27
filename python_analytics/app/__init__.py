@@ -31,7 +31,8 @@ def create_app(config_class=None) -> Flask:
     CORS(app)
 
     # Initialize services
-    db_service = DatabaseService(app.config['DATABASE_URL'])
+    config_obj = config_class()
+    db_service = DatabaseService(config_obj.DATABASE_URL)
     alert_service = AlertService()
 
     # Store services in app context
