@@ -16,10 +16,7 @@ class Config:
     POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
     POSTGRES_DB = os.getenv('POSTGRES_DB', 'weather_db')
 
-    @property
-    def DATABASE_URL(self) -> str:
-        """Construct database URL from environment variables"""
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    DATABASE_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'etl_user')}:{os.getenv('POSTGRES_PASSWORD', 'supersecret')}@{os.getenv('POSTGRES_HOST', 'postgres')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'weather_db')}"
 
     # OpenWeatherMap configuration
     OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
