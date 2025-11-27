@@ -8,55 +8,30 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
-    - name: Ensure .env file exists
+    - name: Create .env file
       run: |
-        echo "Checking .env file..."
-        if [ -f .env ]; then
-          echo ".env file found:"
-          cat .env
-        else
-          echo ".env file not found, creating from repository..."
-          # If .env doesn't exist, create it with default values
-          cat > .env << EOF
-# PostgreSQL Configuration
-POSTGRES_USER=etl_user
-POSTGRES_PASSWORD=supersecret
-POSTGRES_DB=weather_db
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-
-# OpenWeatherMap API
-OPENWEATHER_API_KEY=demo_key
-
-# City Configuration
-CITY=Montreal
-
-# ETL Configuration
-ETL_INTERVAL=300
-
-# Flask Configuration
-FLASK_HOST=0.0.0.0
-FLASK_PORT=5000
-
-# Rust Configuration
-RUST_LOG=info
-
-# Telegram Alerts (optional)
-TELEGRAM_TOKEN=
-TELEGRAM_CHAT_ID=
-EOF
-          echo ".env file created successfully"
-        fi
+        cat > .env << EOF
+        POSTGRES_USER=admin
+        POSTGRES_PASSWORD=admin123
+        POSTGRES_DB=weatherdb
+        POSTGRES_HOST=postgres
+        POSTGRES_PORT=5432
+        OPENWEATHER_API_KEY=demo_key
+        CITY=Montreal
+        ETL_INTERVAL=300
+        FLASK_HOST=0.0.0.0
+        FLASK_PORT=5000
+        RUST_LOG=info
+        TELEGRAM_TOKEN=
+        TELEGRAM_CHAT_ID=
+        EOF
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
     - name: Build and start services
       run: |
-        docker compose config  # Verify docker-compose can read the configuration
         docker compose up -d --build postgres
         docker compose up -d --build python_analytics
         # Wait for services to be healthy
