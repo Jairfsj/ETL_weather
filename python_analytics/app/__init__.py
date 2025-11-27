@@ -26,19 +26,17 @@ def create_app(config_class=None) -> Flask:
     if config_class is None:
         config_class = Config
 
-    config_obj = config_class()
-
     # Set configuration manually to avoid property issues
-    app.config['SECRET_KEY'] = config_obj.SECRET_KEY
-    app.config['DEBUG'] = config_obj.DEBUG
-    app.config['DATABASE_URL'] = config_obj.DATABASE_URL
-    app.config['OPENWEATHER_API_KEY'] = config_obj.OPENWEATHER_API_KEY
-    app.config['CITY'] = config_obj.CITY
-    app.config['ETL_INTERVAL'] = config_obj.ETL_INTERVAL
-    app.config['HOST'] = config_obj.HOST
-    app.config['PORT'] = config_obj.PORT
-    app.config['TELEGRAM_TOKEN'] = config_obj.TELEGRAM_TOKEN
-    app.config['TELEGRAM_CHAT_ID'] = config_obj.TELEGRAM_CHAT_ID
+    app.config['SECRET_KEY'] = config_class.SECRET_KEY
+    app.config['DEBUG'] = config_class.DEBUG
+    app.config['DATABASE_URL'] = config_class.DATABASE_URL
+    app.config['OPENWEATHER_API_KEY'] = config_class.OPENWEATHER_API_KEY
+    app.config['CITY'] = config_class.CITY
+    app.config['ETL_INTERVAL'] = config_class.ETL_INTERVAL
+    app.config['HOST'] = config_class.HOST
+    app.config['PORT'] = config_class.PORT
+    app.config['TELEGRAM_TOKEN'] = config_class.TELEGRAM_TOKEN
+    app.config['TELEGRAM_CHAT_ID'] = config_class.TELEGRAM_CHAT_ID
 
     # Initialize extensions
     CORS(app)

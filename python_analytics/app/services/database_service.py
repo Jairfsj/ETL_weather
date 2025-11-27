@@ -14,13 +14,18 @@ class DatabaseService:
     """Service for database operations"""
 
     def __init__(self, connection_string: str):
-        self.connection_string = connection_string
+        logger.info(f"DatabaseService init - received: {connection_string}")
+        logger.info(f"Type: {type(connection_string)}")
+        self.connection_string = str(connection_string)  # Ensure it's a string
+        logger.info(f"After conversion: {self.connection_string}")
         self._engine: Optional[Engine] = None
 
     @property
     def engine(self) -> Engine:
         """Lazy-loaded database engine"""
         if self._engine is None:
+            logger.info(f"Creating engine with connection string: {self.connection_string}")
+            logger.info(f"Connection string type: {type(self.connection_string)}")
             self._engine = create_engine(
                 self.connection_string,
                 pool_pre_ping=True,
