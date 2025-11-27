@@ -4,17 +4,17 @@ use serde::{Deserialize, Serialize};
 pub struct WeatherData {
     pub city: String,
     pub temperature: f64,
-    pub feels_like: f64,
+    pub feels_like: Option<f64>,
     pub humidity: i32,
-    pub pressure: i32,
+    pub pressure: Option<i32>,
     pub wind_speed: f64,
     pub wind_direction: Option<f64>,
     pub weather_main: String,
     pub weather_description: String,
     pub weather_icon: String,
     pub timestamp: i64,
-    pub timezone: i32,
-    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub timezone: Option<i32>,
+    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl WeatherData {
