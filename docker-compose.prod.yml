@@ -128,3 +128,4 @@ volumes:
     driver: local
   nginx_logs:
     driver: local
+

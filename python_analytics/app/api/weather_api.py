@@ -181,3 +181,4 @@ def internal_error(error):
         'success': False,
         'error': 'Internal server error'
     }), 500
+

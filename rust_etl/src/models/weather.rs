@@ -102,3 +102,4 @@ pub struct Sys {
     pub sunrise: Option<i64>,
     pub sunset: Option<i64>,
 }
+

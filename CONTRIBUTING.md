@@ -260,6 +260,7 @@ Ao contribuir, você concorda que suas contribuições estarão sob a mesma lice
 
 ---
 
-**Obrigado por contribuir! 🙏**
+**Obrigado por contribuir! **
 
 Sua contribuição ajuda a tornar o Montreal Weather ETL Dashboard melhor para todos os usuários.
+

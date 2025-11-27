@@ -11,3 +11,4 @@ pub fn graceful_shutdown() {
     log::info!("🛑 Initiating graceful shutdown...");
     std::process::exit(0);
 }
+

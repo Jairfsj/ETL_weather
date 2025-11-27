@@ -122,3 +122,4 @@ class DatabaseService:
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
             return False
+

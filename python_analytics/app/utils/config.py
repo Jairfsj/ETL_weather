@@ -79,3 +79,4 @@ def get_config(config_name: Optional[str] = None) -> Config:
         config_name = os.getenv('FLASK_ENV', 'development')
 
     return config.get(config_name.lower(), config['default'])()
+

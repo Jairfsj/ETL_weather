@@ -68,3 +68,4 @@ impl WeatherService {
         Ok(weather_data)
     }
 }
+
