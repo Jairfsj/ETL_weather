@@ -1,6 +1,6 @@
 #builder
 
-FROM rust:1.88 as builder
+FROM rust:latest as builder
 WORKDIR /usr/src/rust_etl
 # Build the application
 COPY . .
