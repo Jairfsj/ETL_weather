@@ -11,15 +11,24 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Verify .env file exists
+    - name: Debug repository contents
       run: |
-        if [ ! -f .env ]; then
-          echo "Error: .env file not found!"
-          ls -la
-          exit 1
-        else
-          echo ".env file found:"
+        echo "Current directory:"
+        pwd
+        echo "Files in repository:"
+        ls -la
+        echo "Git status:"
+        git status
+        echo "Git log:"
+        git log --oneline -3
+        echo "Checking .env file:"
+        if [ -f .env ]; then
+          echo ".env exists:"
           cat .env
+        else
+          echo ".env NOT found!"
+          echo "Contents of .gitignore:"
+          cat .gitignore
         fi
 
     - name: Set up Docker Buildx
