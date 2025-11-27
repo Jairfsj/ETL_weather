@@ -2,16 +2,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeatherData {
-    pub city: String,
+    pub city: Option<String>,
     pub temperature: f64,
     pub feels_like: Option<f64>,
     pub humidity: i32,
     pub pressure: Option<i32>,
     pub wind_speed: f64,
     pub wind_direction: Option<f64>,
-    pub weather_main: String,
-    pub weather_description: String,
-    pub weather_icon: String,
+    pub weather_main: Option<String>,
+    pub weather_description: Option<String>,
+    pub weather_icon: Option<String>,
     pub timestamp: i64,
     pub timezone: Option<i32>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -27,17 +27,17 @@ impl WeatherData {
         Self {
             city: response.name.clone(),
             temperature: response.main.temp,
-            feels_like: response.main.feels_like,
+            feels_like: Some(response.main.feels_like),
             humidity: response.main.humidity,
-            pressure: response.main.pressure,
+            pressure: Some(response.main.pressure),
             wind_speed: response.wind.speed,
             wind_direction: response.wind.deg,
             weather_main,
             weather_description,
             weather_icon,
             timestamp: response.dt,
-            timezone: response.timezone,
-            created_at: chrono::Utc::now(),
+            timezone: Some(response.timezone),
+            created_at: Some(chrono::Utc::now()),
         }
     }
 }

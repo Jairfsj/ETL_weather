@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                city,\n                temperature,\n                feels_like,\n                humidity,\n                pressure,\n                wind_speed,\n                wind_direction,\n                weather_main,\n                weather_description,\n                weather_icon,\n                timestamp,\n                timezone,\n                created_at\n            FROM weather_data\n            WHERE city = $1\n            ORDER BY timestamp DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "city",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "temperature",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 2,
+        "name": "feels_like",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "humidity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "pressure",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "wind_speed",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "wind_direction",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 7,
+        "name": "weather_main",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "weather_description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "weather_icon",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "timestamp",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 11,
+        "name": "timezone",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 12,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "fb41dfbb0fa4fde1de4b28f69111eaa4d80b43ca96d357ca45741fd965fdd1b2"
+}
