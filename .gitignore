@@ -20,7 +20,7 @@ target
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# .env - Commitado para CI/CD funcionar (contém valores padrão)
+# .env - Ignorado (contém senhas reais)
 # .env.example - Arquivo de exemplo para usuários copiarem 
 target/
 __pycache__/
