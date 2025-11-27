@@ -29,7 +29,7 @@ def create_app(config_class=None) -> Flask:
     # Set configuration manually to avoid property issues
     app.config['SECRET_KEY'] = config_class.SECRET_KEY
     app.config['DEBUG'] = config_class.DEBUG
-    app.config['DATABASE_URL'] = config_class.DATABASE_URL
+    app.config['DATABASE_URL'] = f"postgresql://{os.getenv('POSTGRES_USER', 'etl_user')}:{os.getenv('POSTGRES_PASSWORD', 'supersecret')}@{os.getenv('POSTGRES_HOST', 'postgres')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'weather_db')}"
     app.config['OPENWEATHER_API_KEY'] = config_class.OPENWEATHER_API_KEY
     app.config['CITY'] = config_class.CITY
     app.config['ETL_INTERVAL'] = config_class.ETL_INTERVAL
