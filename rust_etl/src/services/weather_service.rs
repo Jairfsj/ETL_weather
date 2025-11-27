@@ -59,10 +59,10 @@ impl WeatherService {
 
         log::info!(
             "✅ Successfully fetched weather for {}: {:.1}°C, {} ({})",
-            weather_data.city,
+            weather_data.city.as_deref().unwrap_or("Unknown"),
             weather_data.temperature,
-            weather_data.weather_main,
-            weather_data.weather_description
+            weather_data.weather_main.as_deref().unwrap_or("Unknown"),
+            weather_data.weather_description.as_deref().unwrap_or("Unknown")
         );
 
         Ok(weather_data)

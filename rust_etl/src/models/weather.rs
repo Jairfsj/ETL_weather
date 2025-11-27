@@ -25,19 +25,19 @@ impl WeatherData {
         let weather_icon = weather.map(|w| w.icon.clone()).unwrap_or_else(|| "01d".to_string());
 
         Self {
-            city: response.name.clone(),
+            city: Some(response.name.clone()),
             temperature: response.main.temp,
             feels_like: Some(response.main.feels_like),
             humidity: response.main.humidity,
             pressure: Some(response.main.pressure),
             wind_speed: response.wind.speed,
             wind_direction: response.wind.deg,
-            weather_main,
-            weather_description,
-            weather_icon,
+            weather_main: Some(weather_main),
+            weather_description: Some(weather_description),
+            weather_icon: Some(weather_icon),
             timestamp: response.dt,
             timezone: Some(response.timezone),
-            created_at: Some(chrono::Utc::now()),
+            created_at: None,
         }
     }
 }

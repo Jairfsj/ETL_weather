@@ -64,13 +64,13 @@ async fn main() -> Result<()> {
                             Ok(_) => {
                                 info!(
                                     "✅ Weather data inserted: {} - 🌡️ {:.1}°C (feels {:.1}°C), 💧 {}%, 🌬️ {:.1}km/h, ☁️ {} ({})",
-                                    weather_data.city,
+                                    weather_data.city.as_deref().unwrap_or("Unknown"),
                                     weather_data.temperature,
-                                    weather_data.feels_like,
+                                    weather_data.feels_like.unwrap_or(0.0),
                                     weather_data.humidity,
                                     weather_data.wind_speed,
-                                    weather_data.weather_main,
-                                    weather_data.weather_description
+                                    weather_data.weather_main.as_deref().unwrap_or("Unknown"),
+                                    weather_data.weather_description.as_deref().unwrap_or("Unknown")
                                 );
                             }
                             Err(e) => {

@@ -1,4 +1,5 @@
 use std::env;
+use anyhow::Result;
 
 #[derive(Debug, Clone)]
 pub struct AppConfig {
@@ -10,7 +11,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    pub fn from_env() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_env() -> Result<Self> {
         dotenvy::dotenv().ok();
 
         let database_url = format!(
@@ -23,7 +24,7 @@ impl AppConfig {
         );
 
         let api_key = env::var("OPENWEATHER_API_KEY")
-            .map_err(|_| "OPENWEATHER_API_KEY environment variable is required")?;
+            .map_err(|_| anyhow::anyhow!("OPENWEATHER_API_KEY environment variable is required"))?;
 
         let city = env::var("CITY").unwrap_or_else(|_| "Montreal".to_string());
 

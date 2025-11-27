@@ -49,8 +49,7 @@ impl DatabaseService {
     }
 
     pub async fn get_latest_weather(&self, city: &str) -> Result<Option<WeatherData>> {
-        let record = sqlx::query_as!(
-            WeatherData,
+        let record = sqlx::query!(
             r#"
             SELECT
                 city,
@@ -64,8 +63,7 @@ impl DatabaseService {
                 weather_description,
                 weather_icon,
                 timestamp,
-                timezone,
-                created_at
+                timezone
             FROM weather_data
             WHERE city = $1
             ORDER BY timestamp DESC
@@ -75,7 +73,22 @@ impl DatabaseService {
         )
         .fetch_optional(&self.pool)
         .await
-        .context("Failed to fetch latest weather data")?;
+        .context("Failed to fetch latest weather data")?
+        .map(|row| WeatherData {
+            city: row.city,
+            temperature: row.temperature,
+            feels_like: row.feels_like,
+            humidity: row.humidity,
+            pressure: row.pressure,
+            wind_speed: row.wind_speed,
+            wind_direction: row.wind_direction,
+            weather_main: row.weather_main,
+            weather_description: row.weather_description,
+            weather_icon: row.weather_icon,
+            timestamp: row.timestamp,
+            timezone: row.timezone,
+            created_at: None,
+        });
 
         Ok(record)
     }
