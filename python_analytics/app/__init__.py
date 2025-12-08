@@ -1,6 +1,6 @@
 import logging
 import os
-from flask import Flask 
+from flask import Flask, render_template
 from flask_cors import CORS
 
 from .api.weather_api import weather_bp
@@ -102,9 +102,9 @@ def register_routes(app: Flask):
                 'humidity': [{'timestamp': item['timestamp'], 'humidity': item['humidity']} for item in chart_weather.get_temperature_trend(24)]
             }
 
-            return app.render_template('dashboard.html',
-                                     latest_weather=latest_weather,
-                                     chart_data=chart_data)
+            return render_template('dashboard.html',
+                                   latest_weather=latest_weather,
+                                   chart_data=chart_data)
 
         except Exception as e:
             logger.error(f"Dashboard error: {e}")
