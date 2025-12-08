@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌤️ Clima Montreal - Monitoramento em Tempo Real</title>
+    <title>🌤️ Montreal Climate Monitor - Real-Time Weather Dashboard</title>
 
     <!-- Meta Tags para SEO -->
-    <meta name="description" content="Monitore o clima de Montreal em tempo real com dados precisos e visualizações interativas. Temperatura, umidade, vento e previsões atualizadas.">
-    <meta name="keywords" content="clima Montreal, tempo real, meteorologia, Canadá, Quebec, temperatura">
+    <meta name="description" content="Monitor Montreal's climate in real-time with precise data and interactive visualizations. Temperature, humidity, wind and updated forecasts.">
+    <meta name="keywords" content="Montreal weather, climate monitor, real-time, meteorology, Canada, Quebec, temperature, Celsius, Fahrenheit">
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
@@ -582,23 +582,34 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <h1 class="fade-in">🌤️ Clima Montreal</h1>
-            <p class="subtitle fade-in">
-                Monitoramento climático em tempo real da cidade de Montreal, Quebec.
-                Dados precisos e visualizações interativas para acompanhar as condições meteorológicas atuais.
+            <div class="header-top">
+                <div class="language-selector">
+                    <button class="lang-btn active" onclick="setLanguage('en')">🇺🇸 EN</button>
+                    <button class="lang-btn" onclick="setLanguage('pt')">🇧🇷 PT</button>
+                    <button class="lang-btn" onclick="setLanguage('fr')">🇫🇷 FR</button>
+                </div>
+                <div class="unit-selector">
+                    <button class="unit-btn active" onclick="setTemperatureUnit('celsius')">°C</button>
+                    <button class="unit-btn" onclick="setTemperatureUnit('fahrenheit')">°F</button>
+                </div>
+            </div>
+
+            <h1 class="fade-in" data-lang-key="title">🌤️ Montreal Climate Monitor</h1>
+            <p class="subtitle fade-in" data-lang-key="subtitle">
+                Real-time climate monitoring of Montreal, Quebec. Precise data and interactive visualizations to track current weather conditions.
             </p>
 
             <div class="status-bar fade-in">
                 <div class="status-item">
                     <div class="status-dot"></div>
-                    <span>Sistema Online</span>
+                    <span data-lang-key="systemOnline">System Online</span>
                 </div>
                 <div class="status-item">
-                    <span id="last-update">Demonstração - Dados Simulados</span>
+                    <span id="last-update" data-lang-key="demoData">Demonstration - Simulated Data</span>
                 </div>
             </div>
 
-            <button class="demo-btn" onclick="loadDemoData()">🔄 Carregar Dados de Demonstração</button>
+            <button class="demo-btn" onclick="loadDemoData()" data-lang-key="loadDemoBtn">🔄 Load Demo Data</button>
         </div>
     </header>
 
