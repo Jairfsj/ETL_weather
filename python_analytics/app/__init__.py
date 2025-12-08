@@ -1,11 +1,12 @@
 import logging
 import os
-from flask import Flask
+from flask import Flask 
 from flask_cors import CORS
 
 from .api.weather_api import weather_bp
 from .services.database_service import DatabaseService
 from .services.alert_service import AlertService
+from .services.aeris_weather_service import AerisWeatherService
 from .utils.config import Config
 
 # Configure logging
@@ -31,6 +32,8 @@ def create_app(config_class=None) -> Flask:
     app.config['DEBUG'] = config_class.DEBUG
     app.config['DATABASE_URL'] = f"postgresql://{os.getenv('POSTGRES_USER', 'etl_user')}:{os.getenv('POSTGRES_PASSWORD', 'supersecret')}@{os.getenv('POSTGRES_HOST', 'postgres')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'weather_db')}"
     app.config['OPENWEATHER_API_KEY'] = config_class.OPENWEATHER_API_KEY
+    app.config['AERIS_CLIENT_ID'] = config_class.AERIS_CLIENT_ID
+    app.config['AERIS_CLIENT_SECRET'] = config_class.AERIS_CLIENT_SECRET
     app.config['CITY'] = config_class.CITY
     app.config['ETL_INTERVAL'] = config_class.ETL_INTERVAL
     app.config['HOST'] = config_class.HOST
@@ -44,10 +47,12 @@ def create_app(config_class=None) -> Flask:
     # Initialize services
     db_service = DatabaseService(app.config['DATABASE_URL'])
     alert_service = AlertService()
+    aeris_weather_service = AerisWeatherService()
 
     # Store services in app context
     app.config['db_service'] = db_service
     app.config['alert_service'] = alert_service
+    app.config['aeris_weather_service'] = aeris_weather_service
 
     # Register blueprints
     app.register_blueprint(weather_bp, url_prefix='/api/v1/weather')
@@ -69,6 +74,9 @@ def create_app(config_class=None) -> Flask:
                 'current': '/api/v1/weather/current',
                 'stats': '/api/v1/weather/stats',
                 'chart_data': '/api/v1/weather/chart-data',
+                'aeris_montreal': '/api/v1/weather/aeris/montreal',
+                'aeris_csv': '/api/v1/weather/aeris/montreal/csv',
+                'aeris_locations': '/api/v1/weather/aeris/locations?locations=montreal,ca&locations=toronto,ca',
                 'dashboard': '/dashboard'
             }
         }

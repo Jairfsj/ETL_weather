@@ -20,6 +20,12 @@ class Config:
 
     # OpenWeatherMap configuration
     OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
+
+    # AerisWeather configuration
+    AERIS_CLIENT_ID = os.getenv('AERIS_CLIENT_ID')
+    AERIS_CLIENT_SECRET = os.getenv('AERIS_CLIENT_SECRET')
+
+    # City configuration
     CITY = os.getenv('CITY', 'Montreal')
 
     # ETL configuration

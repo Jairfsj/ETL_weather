@@ -138,3 +138,4 @@ class WeatherDataList:
             for item in recent_data
         ]
 
+

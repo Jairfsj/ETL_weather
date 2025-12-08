@@ -76,13 +76,13 @@ async fn main() -> Result<()> {
                             Err(e) => {
                                 error!("❌ Database insert failed: {}", e);
                             }
-                        }
-                    }
+                }
+            }
                     Err(e) => {
                         warn!("⚠️  Failed to fetch weather data: {}", e);
                         warn!("   Will retry in {} seconds...", config.interval_seconds);
-                    }
-                }
+        }
+    }
 
                 sleep(Duration::from_secs(config.interval_seconds)).await;
             } => {}

@@ -70,3 +70,4 @@ class AlertService:
         message = f"🌤️ Weather Update for {city}\n\nCurrent condition: {condition}\nTemperature: {temperature:.1f}°C"
         self.send_alert(message, "INFO")
 
+

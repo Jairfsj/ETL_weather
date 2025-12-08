@@ -14,6 +14,7 @@
 
 ### 🔄 ETL em Tempo Real
 - **Coleta automática** de dados da API OpenWeatherMap a cada 5 minutos
+- **Integração AerisWeather** para dados climáticos complementares
 - **Processamento robusto** com tratamento de erros e recuperação automática
 - **Armazenamento confiável** em PostgreSQL com índices otimizados
 
@@ -36,6 +37,7 @@
 - **Docker** (versão 20.10+)
 - **Docker Compose** (versão 2.0+)
 - **Conta gratuita** no [OpenWeatherMap](https://openweathermap.org/)
+- **Conta gratuita** no [AerisWeather](https://www.aerisweather.com/) (opcional, para dados complementares)
 
 ### 1. Clonagem e Configuração
 
@@ -153,6 +155,8 @@ docker compose logs -f
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
 | `OPENWEATHER_API_KEY` | - | **Obrigatória** - Chave da API OpenWeatherMap |
+| `AERIS_CLIENT_ID` | - | **Opcional** - ID do cliente AerisWeather |
+| `AERIS_CLIENT_SECRET` | - | **Opcional** - Segredo do cliente AerisWeather |
 | `CITY` | Montreal | Cidade para coleta de dados |
 | `ETL_INTERVAL` | 300 | Intervalo de coleta em segundos |
 | `POSTGRES_USER` | etl_user | Usuário do banco de dados |
@@ -334,6 +338,7 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 ## 🙏 Agradecimentos
 
 - [OpenWeatherMap](https://openweathermap.org/) - API de dados climáticos
+- [AerisWeather](https://www.aerisweather.com/) - API de dados climáticos complementares
 - [Rust Language](https://rust-lang.org/) - Linguagem de programação
 - [Python](https://python.org/) - Ecossistema de desenvolvimento
 - [PostgreSQL](https://postgresql.org/) - Banco de dados robusto

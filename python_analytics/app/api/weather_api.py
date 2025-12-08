@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request, current_app
 from typing import Dict, Any
 from ..services.database_service import DatabaseService
 from ..services.alert_service import AlertService
+from ..services.aeris_weather_service import AerisWeatherService
 
 logger = logging.getLogger(__name__)
 weather_bp = Blueprint('weather', __name__)
@@ -16,6 +17,11 @@ def get_db_service() -> DatabaseService:
 def get_alert_service() -> AlertService:
     """Get alert service from app context"""
     return current_app.config['alert_service']
+
+
+def get_aeris_weather_service() -> AerisWeatherService:
+    """Get AerisWeather service from app context"""
+    return current_app.config['aeris_weather_service']
 
 
 @weather_bp.route('/health')
@@ -181,4 +187,111 @@ def internal_error(error):
         'success': False,
         'error': 'Internal server error'
     }), 500
+
+
+# AerisWeather API endpoints
+
+@weather_bp.route('/aeris/montreal')
+def get_aeris_montreal_weather():
+    """Get current Montreal weather data from AerisWeather API"""
+    try:
+        aeris_service = get_aeris_weather_service()
+        weather_summary = aeris_service.get_montreal_weather_summary()
+
+        if weather_summary is None:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to fetch weather data from AerisWeather API. Check API credentials.'
+            }), 503
+
+        return jsonify({
+            'success': True,
+            'data': weather_summary,
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching AerisWeather data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/aeris/montreal/csv')
+def download_aeris_montreal_csv():
+    """Download Montreal weather data as CSV from AerisWeather API"""
+    try:
+        aeris_service = get_aeris_weather_service()
+        df = aeris_service.get_montreal_weather()
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': 'No weather data available for download'
+            }), 404
+
+        csv_path = aeris_service.save_to_csv(df)
+
+        if csv_path is None:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to save CSV file'
+            }), 500
+
+        return jsonify({
+            'success': True,
+            'message': 'CSV file created successfully',
+            'file_path': csv_path,
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error creating CSV from AerisWeather data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/aeris/locations')
+def get_aeris_multiple_locations():
+    """Get weather data for multiple locations from AerisWeather API"""
+    try:
+        locations = request.args.getlist('locations')
+
+        if not locations:
+            return jsonify({
+                'success': False,
+                'error': 'No locations provided. Use ?locations=montreal,ca&locations=toronto,ca'
+            }), 400
+
+        custom_fields = request.args.getlist('fields')
+
+        aeris_service = get_aeris_weather_service()
+        df = aeris_service.locations_loop(locations, custom_fields if custom_fields else None)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': 'No weather data found for the specified locations'
+            }), 404
+
+        # Convert DataFrame to dict for JSON response
+        result = df.to_dict('records')
+
+        return jsonify({
+            'success': True,
+            'data': result,
+            'count': len(result),
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching multiple locations from AerisWeather: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 
