@@ -8,6 +8,7 @@ from .services.database_service import DatabaseService
 from .services.alert_service import AlertService
 from .services.aeris_weather_service import AerisWeatherService
 from .services.open_meteo_service import OpenMeteoService
+from .services.weatherapi_service import WeatherAPIService
 from .utils.config import Config
 
 # Configure logging
@@ -50,12 +51,14 @@ def create_app(config_class=None) -> Flask:
     alert_service = AlertService()
     aeris_weather_service = AerisWeatherService()
     open_meteo_service = OpenMeteoService()
+    weatherapi_service = WeatherAPIService()
 
     # Store services in app context
     app.config['db_service'] = db_service
     app.config['alert_service'] = alert_service
     app.config['aeris_weather_service'] = aeris_weather_service
     app.config['open_meteo_service'] = open_meteo_service
+    app.config['weatherapi_service'] = weatherapi_service
 
     # Register blueprints
     app.register_blueprint(weather_bp, url_prefix='/api/v1/weather')
@@ -92,6 +95,10 @@ def create_app(config_class=None) -> Flask:
                 'seasonal_analysis': '/api/v1/weather/openmeteo/seasonal-analysis?years=2',
                 'yearly_trends': '/api/v1/weather/openmeteo/yearly-trends?years=2',
                 'monitoring_status': '/api/v1/weather/monitoring/status',
+                'weatherapi_current': '/api/v1/weather/weatherapi/current',
+                'weatherapi_forecast': '/api/v1/weather/weatherapi/forecast?days=7',
+                'weatherapi_realtime': '/api/v1/weather/weatherapi/realtime',
+                'weatherapi_status': '/api/v1/weather/weatherapi/status',
                 'dashboard': '/dashboard'
             }
         }

@@ -479,3 +479,40 @@ Para suporte técnico ou dúvidas:
 ---
 
 **⭐ Se este projeto foi útil para você, considere dar uma estrela no GitHub!**
+
+---
+
+## 🌐 API de Clima em Tempo Real (WeatherAPI)
+
+**Nova API gratuita com dados em tempo real:**
+
+```bash
+# Dados atuais em tempo real
+curl http://localhost:5000/api/v1/weather/weatherapi/current
+
+# Previsão para 7 dias
+curl http://localhost:5000/api/v1/weather/weatherapi/forecast
+
+# Monitoramento completo em tempo real
+curl http://localhost:5000/api/v1/weather/weatherapi/realtime
+```
+
+**Características WeatherAPI:**
+- ⚡ **Tempo Real**: Atualizações a cada 15 minutos
+- 🎯 **Precisão**: Dados oficiais de estações meteorológicas
+- 💰 **Gratuito**: 1.000.000 chamadas/mês (tier gratuito)
+- 🌍 **Global**: Suporte para qualquer localização
+- 🚨 **Alertas**: Avisos meteorológicos ativos
+- 📊 **Histórico**: Dados de até 10 dias no passado
+
+**Para usar dados reais:**
+1. Cadastre-se gratuitamente em [WeatherAPI.com](https://www.weatherapi.com/)
+2. Obtenha sua chave de API
+3. Configure a variável `WEATHERAPI_KEY` no arquivo `.env`
+4. Reinicie os containers: `docker compose restart`
+
+**Monitoramento 2025-2027:**
+- 📅 **Período**: 07/12/2025 até 01/01/2027
+- ⚡ **Frequência**: Dados em tempo real contínuo
+- 💾 **Histórico**: Coleta automática 3x por semana
+- 🌤️ **APIs**: Open-Meteo (histórico) + WeatherAPI (tempo real)
