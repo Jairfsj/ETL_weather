@@ -14,7 +14,7 @@
 
 ### 🔄 ETL em Tempo Real
 - **Coleta automática** de dados da API OpenWeatherMap a cada 5 minutos
-- **Integração AerisWeather** para dados climáticos complementares
+- **Integração AerisWeather** para dados climáticos atuais e históricos
 - **Processamento robusto** com tratamento de erros e recuperação automática
 - **Armazenamento confiável** em PostgreSQL com índices otimizados
 

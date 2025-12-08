@@ -77,6 +77,9 @@ def create_app(config_class=None) -> Flask:
                 'aeris_montreal': '/api/v1/weather/aeris/montreal',
                 'aeris_csv': '/api/v1/weather/aeris/montreal/csv',
                 'aeris_locations': '/api/v1/weather/aeris/locations?locations=montreal,ca&locations=toronto,ca',
+                'aeris_historical_date': '/api/v1/weather/aeris/historical/2024-01-01',
+                'aeris_historical_range': '/api/v1/weather/aeris/historical?start_date=2024-01-01&end_date=2024-01-05',
+                'aeris_historical_csv': '/api/v1/weather/aeris/historical/csv?start_date=2024-01-01&end_date=2024-01-05',
                 'dashboard': '/dashboard'
             }
         }

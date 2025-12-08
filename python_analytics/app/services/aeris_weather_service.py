@@ -1,10 +1,11 @@
 import json
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict, Tuple
 import pandas as pd
+from pandas import DatetimeIndex
 from requests import request
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 import logging
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,21 @@ class AerisWeatherService:
 
         # Montreal location
         self.montreal_location = "montreal,ca"
+
+        # Historical fields (include dateTimeISO for historical data)
+        self.historical_fields = [
+            'periods.dateTimeISO',
+            'place.name',
+            'place.country',
+            'periods.tempC',
+            'periods.feelslikeC',
+            'periods.humidity',
+            'periods.windSpeedKPH',
+            'periods.windDir',
+            'periods.pressureMB',
+            'periods.weather',
+            'periods.icon'
+        ]
 
     def aeris_api_dataframe(self, location: str, custom_fields: List[str] = None) -> Optional[pd.DataFrame]:
         """Fetch weather data for a single location from AerisWeather API"""
@@ -134,6 +150,142 @@ class AerisWeatherService:
         except Exception as e:
             logger.error(f"Error saving CSV file: {e}")
             return None
+
+    def aeris_api_dataframe_historical(self, location: str, from_date: date, custom_fields: List[str] = None) -> Optional[pd.DataFrame]:
+        """Fetch historical weather data for a single location and date from AerisWeather API"""
+
+        if not self.client_id or not self.client_secret:
+            logger.error("AerisWeather credentials not configured")
+            return None
+
+        formatted_fields = []
+        if custom_fields is not None:
+            formatted_fields = ','.join(custom_fields)
+        else:
+            formatted_fields = ','.join(self.historical_fields)
+
+        logger.info(f"Retrieving historical AerisWeather data for {location} on {from_date.strftime('%Y-%m-%d')}...")
+
+        try:
+            res = request(
+                method="GET",
+                url=f"https://api.aerisapi.com/conditions/{location}",
+                params={
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "fields": formatted_fields,
+                    "from": from_date.strftime('%Y-%m-%d 00:00:00'),
+                    "to": from_date.strftime('%Y-%m-%d 23:59:59'),
+                    "limit": 24
+                },
+                timeout=60
+            )
+
+            if res.status_code != 200:
+                logger.error(f"AerisWeather API returned status code {res.status_code}: {res.text}")
+                return None
+
+            api_response_body = json.loads(res.text)
+
+            # Check if response has the expected structure
+            if 'response' not in api_response_body or not api_response_body['response']:
+                logger.warning(f"No historical data found for location {location} on {from_date.strftime('%Y-%m-%d')}")
+                return None
+
+            try:
+                # Normalize the main response data (excluding periods)
+                df_pre_period = pd.json_normalize(api_response_body['response'][0]).drop("periods", axis=1, errors='ignore')
+
+                # Normalize the periods data
+                df_periods = pd.json_normalize(api_response_body['response'][0], "periods", record_prefix="periods.")
+
+                # Join the dataframes
+                result_df = df_pre_period.join(df_periods, how="cross")
+
+                logger.info(f"Successfully retrieved historical data for {location} on {from_date.strftime('%Y-%m-%d')}")
+                return result_df
+
+            except (IndexError, KeyError) as e:
+                logger.error(f"Error parsing historical API response for {location}: {e}")
+                logger.debug(f"API Response: {api_response_body}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error fetching historical data from AerisWeather API for {location}: {e}")
+            return None
+
+    def get_historical_weather_date(self, target_date: date, locations: List[str] = None, custom_fields: List[str] = None) -> Optional[pd.DataFrame]:
+        """Get historical weather data for a specific date across multiple locations"""
+        if locations is None:
+            locations = [self.montreal_location]
+
+        all_dataframes = []
+
+        for location in locations:
+            df = self.aeris_api_dataframe_historical(location, target_date, custom_fields)
+            if df is not None:
+                all_dataframes.append(df)
+
+        if all_dataframes:
+            combined_df = pd.concat(all_dataframes, ignore_index=True)
+            logger.info(f"Successfully combined historical data for {len(all_dataframes)} locations on {target_date.strftime('%Y-%m-%d')}")
+            return combined_df
+        else:
+            logger.warning(f"No historical data retrieved for any locations on {target_date.strftime('%Y-%m-%d')}")
+            return None
+
+    def get_historical_weather_range(self, start_date: date, end_date: date, locations: List[str] = None, custom_fields: List[str] = None) -> Optional[Dict[str, pd.DataFrame]]:
+        """Get historical weather data for a date range across multiple locations"""
+        if locations is None:
+            locations = [self.montreal_location]
+
+        # Create date range
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+
+        results = {}
+
+        for current_date in date_range:
+            date_str = current_date.strftime('%Y-%m-%d')
+            df = self.get_historical_weather_date(current_date.date(), locations, custom_fields)
+            if df is not None:
+                results[date_str] = df
+
+        if results:
+            logger.info(f"Successfully retrieved historical data for {len(results)} dates")
+            return results
+        else:
+            logger.warning("No historical data retrieved for the specified date range")
+            return None
+
+    def generate_historical_csvs(self, date_range: DatetimeIndex, locations: List[str] = None, output_dir: str = "csv_output", custom_fields: List[str] = None) -> List[str]:
+        """Generate CSV files for historical weather data across a date range"""
+        try:
+            output_path = Path(output_dir)
+            output_path.mkdir(exist_ok=True)
+
+            sorted_dates = date_range.sort_values()
+            generated_files = []
+
+            for current_date in sorted_dates:
+                filename = f"aeris-historical-conditions-{current_date.strftime('%Y%m%d')}.csv"
+                file_path = output_path / filename
+
+                # Get data for this date
+                df = self.get_historical_weather_date(current_date.date(), locations, custom_fields)
+
+                if df is not None:
+                    df.to_csv(file_path, encoding="utf-8", index=False)
+                    generated_files.append(str(file_path))
+                    logger.info(f"Historical CSV saved: {file_path}")
+                else:
+                    logger.warning(f"No data available for {current_date.strftime('%Y-%m-%d')}, skipping CSV generation")
+
+            logger.info(f"Generated {len(generated_files)} historical CSV files")
+            return generated_files
+
+        except Exception as e:
+            logger.error(f"Error generating historical CSV files: {e}")
+            return []
 
     def get_montreal_weather_summary(self) -> Optional[dict]:
         """Get a summary of Montreal weather data"""

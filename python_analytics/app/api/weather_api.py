@@ -1,6 +1,7 @@
 import logging
 from flask import Blueprint, jsonify, request, current_app
 from typing import Dict, Any
+from datetime import datetime
 from ..services.database_service import DatabaseService
 from ..services.alert_service import AlertService
 from ..services.aeris_weather_service import AerisWeatherService
@@ -289,6 +290,194 @@ def get_aeris_multiple_locations():
 
     except Exception as e:
         logger.error(f"Error fetching multiple locations from AerisWeather: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# AerisWeather Historical Data endpoints
+
+@weather_bp.route('/aeris/historical/<date>')
+def get_aeris_historical_date(date):
+    """Get historical weather data for a specific date from AerisWeather API"""
+    try:
+        # Parse date
+        try:
+            target_date = datetime.strptime(date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+
+        locations = request.args.getlist('locations')
+        if not locations:
+            locations = ['montreal,ca']
+
+        custom_fields = request.args.getlist('fields')
+
+        aeris_service = get_aeris_weather_service()
+        df = aeris_service.get_historical_weather_date(target_date, locations, custom_fields if custom_fields else None)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': f'No historical data found for date {date}'
+            }), 404
+
+        # Convert DataFrame to dict for JSON response
+        result = df.to_dict('records')
+
+        return jsonify({
+            'success': True,
+            'data': result,
+            'date': date,
+            'locations': locations,
+            'count': len(result),
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching historical data for date {date}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/aeris/historical')
+def get_aeris_historical_range():
+    """Get historical weather data for a date range from AerisWeather API"""
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return jsonify({
+                'success': False,
+                'error': 'Both start_date and end_date are required (format: YYYY-MM-DD)'
+            }), 400
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+
+        if start_date > end_date:
+            return jsonify({
+                'success': False,
+                'error': 'start_date must be before or equal to end_date'
+            }), 400
+
+        locations = request.args.getlist('locations')
+        if not locations:
+            locations = ['montreal,ca']
+
+        custom_fields = request.args.getlist('fields')
+
+        aeris_service = get_aeris_weather_service()
+        results = aeris_service.get_historical_weather_range(start_date, end_date, locations, custom_fields if custom_fields else None)
+
+        if results is None or len(results) == 0:
+            return jsonify({
+                'success': False,
+                'error': f'No historical data found for date range {start_date_str} to {end_date_str}'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'data': results,
+            'date_range': {
+                'start': start_date_str,
+                'end': end_date_str
+            },
+            'locations': locations,
+            'total_dates': len(results),
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching historical data range: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/aeris/historical/csv')
+def generate_aeris_historical_csvs():
+    """Generate CSV files for historical weather data"""
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return jsonify({
+                'success': False,
+                'error': 'Both start_date and end_date are required (format: YYYY-MM-DD)'
+            }), 400
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+
+        if start_date > end_date:
+            return jsonify({
+                'success': False,
+                'error': 'start_date must be before or equal to end_date'
+            }), 400
+
+        # Check date range (limit to prevent abuse)
+        date_range_days = (end_date - start_date).days + 1
+        if date_range_days > 30:
+            return jsonify({
+                'success': False,
+                'error': 'Date range cannot exceed 30 days'
+            }), 400
+
+        locations = request.args.getlist('locations')
+        if not locations:
+            locations = ['montreal,ca']
+
+        custom_fields = request.args.getlist('fields')
+
+        # Create date range
+        dt_list = pd.date_range(start=start_date, end=end_date, freq='D')
+
+        aeris_service = get_aeris_weather_service()
+        generated_files = aeris_service.generate_historical_csvs(dt_list, locations, custom_fields=custom_fields if custom_fields else None)
+
+        if not generated_files:
+            return jsonify({
+                'success': False,
+                'error': 'No CSV files were generated'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': f'Successfully generated {len(generated_files)} historical CSV files',
+            'files': generated_files,
+            'date_range': {
+                'start': start_date_str,
+                'end': end_date_str,
+                'days': date_range_days
+            },
+            'locations': locations,
+            'source': 'AerisWeather'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error generating historical CSV files: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
