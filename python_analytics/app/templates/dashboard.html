@@ -1161,9 +1161,51 @@
             }
         }
 
-        async function compareSources() {
+        async         function compareSources() {
             // This function would compare OpenWeatherMap and AerisWeather data
             showNotification('Comparação de fontes em desenvolvimento', 'info');
+        }
+
+        async function showHistoricalDemo() {
+            const aerisDataDiv = document.getElementById('aeris-weather-data');
+
+            // Show demo of historical data endpoints
+            const demoHtml = `
+                <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin-top: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #1f2937; font-size: 1.1rem;">
+                        <i class="fas fa-history"></i> Dados Históricos AerisWeather
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; font-size: 0.9rem;">
+                        <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #8b5cf6;">
+                            <strong>Uma data específica:</strong><br>
+                            <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px;">GET /api/v1/weather/aeris/historical/2024-01-01</code>
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #10b981;">
+                            <strong>Intervalo de datas:</strong><br>
+                            <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px;">GET /api/v1/weather/aeris/historical?start_date=2024-01-01&end_date=2024-01-05</code>
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                            <strong>Gerar CSVs históricos:</strong><br>
+                            <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px;">GET /api/v1/weather/aeris/historical/csv?start_date=2024-01-01&end_date=2024-01-05</code>
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                            <strong>Exemplo de uso:</strong><br>
+                            <code style="background: #f3f4f6; padding: 2px 4px; border-radius: 3px; display: block; margin-top: 4px;">
+                            curl "http://localhost:5000/api/v1/weather/aeris/historical/csv?start_date=2024-01-01&end_date=2024-01-03&locations=montreal,ca"
+                            </code>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding: 8px; background: #fef3c7; border-radius: 4px; border: 1px solid #f59e0b;">
+                        <small style="color: #92400e;">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Nota:</strong> Configure AERIS_CLIENT_ID e AERIS_CLIENT_SECRET no arquivo .env para usar dados reais.
+                        </small>
+                    </div>
+                </div>
+            `;
+
+            aerisDataDiv.insertAdjacentHTML('beforeend', demoHtml);
+            showNotification('Demonstração dos endpoints históricos carregada!', 'success');
         }
 
         function showNotification(message, type = 'info') {

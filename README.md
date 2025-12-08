@@ -22,7 +22,15 @@
 - **Interface moderna** e responsiva para desktop e mobile
 - **Visualizações em tempo real** com gráficos interativos
 - **Métricas detalhadas** de temperatura, umidade, pressão e vento
+- **Dados históricos** do AerisWeather com geração de CSVs
 - **Design intuitivo** para usuários não-técnicos
+
+### 📈 Dados Históricos AerisWeather
+- **Busca por data específica** com `/api/v1/weather/aeris/historical/YYYY-MM-DD`
+- **Intervalos de datas** com parâmetros `start_date` e `end_date`
+- **Geração automática de CSVs** para análise histórica
+- **Múltiplas localizações** em uma única consulta
+- **Campos personalizáveis** para otimização de dados
 
 ### 🏗️ Arquitetura Profissional
 - **Microserviços** desacoplados com responsabilidades claras
@@ -130,6 +138,22 @@ docker compose logs -f
                        │  Python Flask   │ <= │   Web Dashboard │
                        │   REST API      │    │   (HTML/CSS/JS) │
                        └─────────────────┘    └─────────────────┘
+```
+
+### 📈 Exemplos de Uso - Dados Históricos AerisWeather
+
+```bash
+# Dados históricos de uma data específica
+curl http://localhost:5000/api/v1/weather/aeris/historical/2024-01-01
+
+# Dados históricos em intervalo de datas
+curl "http://localhost:5000/api/v1/weather/aeris/historical?start_date=2024-01-01&end_date=2024-01-05"
+
+# Gerar CSVs históricos automaticamente
+curl "http://localhost:5000/api/v1/weather/aeris/historical/csv?start_date=2024-01-01&end_date=2024-01-03"
+
+# Script Python de exemplo incluído
+python historical_weather_example.py
 ```
 
 ### Componentes
