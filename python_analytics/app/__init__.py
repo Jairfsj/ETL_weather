@@ -7,6 +7,7 @@ from .api.weather_api import weather_bp
 from .services.database_service import DatabaseService
 from .services.alert_service import AlertService
 from .services.aeris_weather_service import AerisWeatherService
+from .services.open_meteo_service import OpenMeteoService
 from .utils.config import Config
 
 # Configure logging
@@ -48,11 +49,13 @@ def create_app(config_class=None) -> Flask:
     db_service = DatabaseService(app.config['DATABASE_URL'])
     alert_service = AlertService()
     aeris_weather_service = AerisWeatherService()
+    open_meteo_service = OpenMeteoService()
 
     # Store services in app context
     app.config['db_service'] = db_service
     app.config['alert_service'] = alert_service
     app.config['aeris_weather_service'] = aeris_weather_service
+    app.config['open_meteo_service'] = open_meteo_service
 
     # Register blueprints
     app.register_blueprint(weather_bp, url_prefix='/api/v1/weather')
@@ -80,6 +83,11 @@ def create_app(config_class=None) -> Flask:
                 'aeris_historical_date': '/api/v1/weather/aeris/historical/2024-01-01',
                 'aeris_historical_range': '/api/v1/weather/aeris/historical?start_date=2024-01-01&end_date=2024-01-05',
                 'aeris_historical_csv': '/api/v1/weather/aeris/historical/csv?start_date=2024-01-01&end_date=2024-01-05',
+                'openmeteo_current': '/api/v1/weather/openmeteo/current',
+                'openmeteo_forecast': '/api/v1/weather/openmeteo/forecast?days=7',
+                'openmeteo_historical': '/api/v1/weather/openmeteo/historical?start_date=2024-01-01&end_date=2024-01-31',
+                'openmeteo_monitoring': '/api/v1/weather/openmeteo/monitoring?weeks=4',
+                'openmeteo_csv': '/api/v1/weather/openmeteo/historical/csv?start_date=2024-01-01&end_date=2024-01-31',
                 'dashboard': '/dashboard'
             }
         }

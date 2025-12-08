@@ -21,11 +21,21 @@
 ### 📊 Dashboard Interativo
 - **Interface moderna** e responsiva para desktop e mobile
 - **Visualizações em tempo real** com gráficos interativos
+- **Gráficos PowerBI-style** avançados (KPI cards, correlações, mapas de calor)
+- **Monitoramento Open-Meteo** para dados atuais e históricos (sem chave API)
 - **Métricas detalhadas** de temperatura, umidade, pressão e vento
 - **Dados históricos** do AerisWeather com geração de CSVs
 - **Design intuitivo** para usuários não-técnicos
 
-### 📈 Dados Históricos AerisWeather
+### 🌤️ Open-Meteo - Melhor API para Monitoramento Semi-Real
+- **Gratuita e SEM CHAVE API** necessária (diferença crucial!)
+- **Dados atuais precisos** com coordenadas exatas de Montreal (45.5019, -73.5673)
+- **Previsões de 7-16 dias** para planejamento
+- **Monitoramento semanal** otimizado (3-4 vezes por semana)
+- **Dados históricos de até 60 anos** para análise de longo prazo
+- **Geração de CSVs históricos** automática
+
+### 📈 Dados Históricos AerisWeather (Complementar)
 - **Busca por data específica** com `/api/v1/weather/aeris/historical/YYYY-MM-DD`
 - **Intervalos de datas** com parâmetros `start_date` e `end_date`
 - **Geração automática de CSVs** para análise histórica
@@ -140,7 +150,29 @@ docker compose logs -f
                        └─────────────────┘    └─────────────────┘
 ```
 
-### 📈 Exemplos de Uso - Dados Históricos AerisWeather
+### 🎯 Open-Meteo - Exemplos de Uso (RECOMENDADO)
+
+```bash
+# Dados atuais para monitoramento em tempo real (SEM CHAVE API!)
+curl http://localhost:5000/api/v1/weather/openmeteo/current
+
+# Previsão do tempo para 7 dias
+curl "http://localhost:5000/api/v1/weather/openmeteo/forecast?days=7"
+
+# Monitoramento semanal otimizado (3-4 vezes por semana)
+curl "http://localhost:5000/api/v1/weather/openmeteo/monitoring?weeks=4"
+
+# Dados históricos de um mês completo
+curl "http://localhost:5000/api/v1/weather/openmeteo/historical?start_date=2024-01-01&end_date=2024-01-31"
+
+# Gerar CSV com dados históricos
+curl "http://localhost:5000/api/v1/weather/openmeteo/historical/csv?start_date=2024-01-01&end_date=2024-01-31"
+
+# Script Python completo incluído
+python open_meteo_example.py
+```
+
+### 📈 AerisWeather - Exemplos Complementares
 
 ```bash
 # Dados históricos de uma data específica

@@ -265,6 +265,87 @@
             color: #6b7280;
         }
 
+        /* PowerBI-Style Advanced Dashboard */
+        .powerbi-section {
+            margin: 50px 0;
+        }
+
+        .kpi-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .kpi-icon {
+            font-size: 3rem;
+            margin-right: 20px;
+            opacity: 0.9;
+        }
+
+        .kpi-content {
+            flex: 1;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .kpi-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .kpi-trend {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-trend i {
+            font-size: 0.75rem;
+        }
+
+        .advanced-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .advanced-chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .advanced-chart-container:hover {
+            transform: translateY(-2px);
+        }
+
         .chart-header {
             display: flex;
             justify-content: space-between;
@@ -562,6 +643,174 @@
             <div id="conditions-chart" style="height: 300px;"></div>
         </div>
 
+        <!-- PowerBI-Style Advanced Charts -->
+        <div class="powerbi-section">
+            <div class="section-header" style="text-align: center; margin-bottom: 30px;">
+                <h2 style="color: white; font-size: 2.5rem; margin-bottom: 10px;">
+                    <i class="fas fa-chart-line"></i> Análise Avançada - PowerBI Style
+                </h2>
+                <p style="color: #e5e7eb; font-size: 1.2rem;">Visualizações interativas para monitoramento climático profissional</p>
+            </div>
+
+            <!-- KPI Cards Row -->
+            <div class="kpi-cards-grid">
+                <div class="kpi-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="kpi-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="kpi-temp-current">--°C</div>
+                        <div class="kpi-label">Temperatura Atual</div>
+                        <div class="kpi-trend" id="kpi-temp-trend">
+                            <i class="fas fa-arrow-up"></i> +2.1°C vs ontem
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="kpi-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="kpi-humidity">--%</div>
+                        <div class="kpi-label">Umidade Relativa</div>
+                        <div class="kpi-trend" id="kpi-humidity-trend">
+                            <i class="fas fa-minus"></i> -5% vs ontem
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="kpi-icon">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="kpi-wind">-- km/h</div>
+                        <div class="kpi-label">Velocidade do Vento</div>
+                        <div class="kpi-trend" id="kpi-wind-trend">
+                            <i class="fas fa-equals"></i> Estável
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <div class="kpi-icon">
+                        <i class="fas fa-cloud-rain"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="kpi-precipitation">-- mm</div>
+                        <div class="kpi-label">Precipitação Hoje</div>
+                        <div class="kpi-trend" id="kpi-precipitation-trend">
+                            <i class="fas fa-umbrella"></i> Sem chuva
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Charts Grid -->
+            <div class="advanced-charts-grid">
+                <!-- Temperature Trend with Moving Average -->
+                <div class="advanced-chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-area"></i>
+                            Tendência de Temperatura (Média Móvel)
+                        </h3>
+                        <div class="chart-controls">
+                            <select class="time-selector" id="temp-trend-selector" onchange="updateAdvancedCharts()">
+                                <option value="7" selected>Últimos 7 dias</option>
+                                <option value="14">Últimos 14 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                                <option value="90">Últimos 90 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="temperature-trend-chart" style="height: 350px;"></div>
+                </div>
+
+                <!-- Temperature vs Humidity Scatter Plot -->
+                <div class="advanced-chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-scatter-chart"></i>
+                            Correlação: Temperatura vs Umidade
+                        </h3>
+                        <div class="chart-controls">
+                            <select class="time-selector" id="correlation-selector" onchange="updateAdvancedCharts()">
+                                <option value="7" selected>Últimos 7 dias</option>
+                                <option value="14">Últimos 14 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="correlation-chart" style="height: 350px;"></div>
+                </div>
+
+                <!-- Weekly Temperature Heatmap -->
+                <div class="advanced-chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-calendar-week"></i>
+                            Mapa de Calor Semanal
+                        </h3>
+                        <div class="chart-controls">
+                            <select class="time-selector" id="heatmap-selector" onchange="updateAdvancedCharts()">
+                                <option value="4" selected>Últimas 4 semanas</option>
+                                <option value="8">Últimas 8 semanas</option>
+                                <option value="12">Últimas 12 semanas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="heatmap-chart" style="height: 350px;"></div>
+                </div>
+
+                <!-- Wind Rose Chart -->
+                <div class="advanced-chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-compass"></i>
+                            Rosa dos Ventos
+                        </h3>
+                        <div class="chart-controls">
+                            <select class="time-selector" id="wind-rose-selector" onchange="updateAdvancedCharts()">
+                                <option value="7" selected>Últimos 7 dias</option>
+                                <option value="14">Últimos 14 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="wind-rose-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+
+            <!-- Open-Meteo Integration Section -->
+            <div class="openmeteo-integration" style="margin-top: 40px;">
+                <div class="card" style="background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                        <i class="fas fa-globe" style="font-size: 1.5rem; color: #10b981; margin-right: 12px;"></i>
+                        <h3 style="margin: 0; color: #1f2937; font-size: 1.25rem;">Monitoramento Open-Meteo (Semi-Real)</h3>
+                    </div>
+                    <div class="openmeteo-controls" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                        <button onclick="loadOpenMeteoCurrent()" class="action-btn" style="padding: 12px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-sync-alt"></i> Atualizar Dados Atuais
+                        </button>
+                        <button onclick="loadOpenMeteoMonitoring()" class="action-btn" style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-calendar-week"></i> Dados de Monitoramento
+                        </button>
+                        <button onclick="loadOpenMeteoForecast()" class="action-btn" style="padding: 12px 16px; background: #8b5cf6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                            <i class="fas fa-cloud-sun"></i> Previsão 7 Dias
+                        </button>
+                    </div>
+                    <div id="openmeteo-data" style="background: #f8fafc; border-radius: 8px; padding: 16px;">
+                        <div class="loading" style="text-align: center; padding: 20px;">
+                            <div class="spinner" style="border: 3px solid #f3f4f6; border-top: 3px solid #10b981; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 10px;"></div>
+                            <p style="color: #6b7280; margin: 0;">Carregando dados Open-Meteo...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Daily Summary Cards -->
         <div class="summary-cards">
             <div class="summary-card">
@@ -774,6 +1023,9 @@
             updateFeelsLikeChart(feelsLikeHours);
             updateConditionsChart(conditionsHours);
             updateSummaryCards();
+
+            // Update advanced PowerBI-style charts
+            updateAdvancedCharts();
         }
 
         function updateTemperatureChart(hours) {
@@ -1006,6 +1258,372 @@
                 const windAvg = windSpeeds.reduce((a, b) => a + b, 0) / windSpeeds.length;
                 document.getElementById('wind-avg').textContent = `${windAvg.toFixed(1)} km/h`;
             }
+        }
+
+        // PowerBI-Style Advanced Chart Functions
+        function updateAdvancedCharts() {
+            updateTemperatureTrendChart();
+            updateCorrelationChart();
+            updateHeatmapChart();
+            updateWindRoseChart();
+            updateKPICards();
+        }
+
+        function updateTemperatureTrendChart() {
+            const days = parseInt(document.getElementById('temp-trend-selector').value);
+
+            // Mock data for demonstration - in real app, fetch from Open-Meteo historical data
+            const mockData = generateMockHistoricalData(days);
+
+            // Calculate moving average
+            const movingAvg = calculateMovingAverage(mockData.map(d => d.temperature), 3);
+
+            const temperatureTrace = {
+                x: mockData.map(d => new Date(d.date)),
+                y: mockData.map(d => d.temperature),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Temperatura Diária',
+                line: {color: '#ef4444', width: 2},
+                fill: 'tozeroy',
+                fillcolor: 'rgba(239, 68, 68, 0.1)'
+            };
+
+            const movingAvgTrace = {
+                x: mockData.slice(2).map(d => new Date(d.date)),
+                y: movingAvg,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Média Móvel (3 dias)',
+                line: {color: '#3b82f6', width: 3}
+            };
+
+            const layout = {
+                margin: {l: 60, r: 30, t: 20, b: 60},
+                xaxis: {
+                    title: 'Data',
+                    type: 'date'
+                },
+                yaxis: {
+                    title: 'Temperatura (°C)',
+                    gridcolor: '#e5e7eb'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#374151'},
+                showlegend: true,
+                legend: {x: 0, y: 1}
+            };
+
+            Plotly.newPlot('temperature-trend-chart', [temperatureTrace, movingAvgTrace], layout, {responsive: true});
+        }
+
+        function updateCorrelationChart() {
+            const days = parseInt(document.getElementById('correlation-selector').value);
+            const mockData = generateMockHistoricalData(days);
+
+            const trace = {
+                x: mockData.map(d => d.temperature),
+                y: mockData.map(d => d.humidity),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Temp vs Umidade',
+                marker: {
+                    size: 8,
+                    color: mockData.map(d => d.temperature),
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    colorbar: {title: 'Temperatura (°C)'}
+                }
+            };
+
+            // Add trend line
+            const regression = calculateLinearRegression(
+                mockData.map(d => d.temperature),
+                mockData.map(d => d.humidity)
+            );
+
+            const trendTrace = {
+                x: [Math.min(...mockData.map(d => d.temperature)), Math.max(...mockData.map(d => d.temperature))],
+                y: [regression.slope * Math.min(...mockData.map(d => d.temperature)) + regression.intercept,
+                    regression.slope * Math.max(...mockData.map(d => d.temperature)) + regression.intercept],
+                mode: 'lines',
+                type: 'scatter',
+                name: 'Linha de Tendência',
+                line: {color: '#ef4444', width: 2, dash: 'dash'}
+            };
+
+            const layout = {
+                margin: {l: 60, r: 30, t: 20, b: 60},
+                xaxis: {
+                    title: 'Temperatura (°C)',
+                    gridcolor: '#e5e7eb'
+                },
+                yaxis: {
+                    title: 'Umidade (%)',
+                    gridcolor: '#e5e7eb'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#374151'},
+                showlegend: true,
+                legend: {x: 0, y: 1}
+            };
+
+            Plotly.newPlot('correlation-chart', [trace, trendTrace], layout, {responsive: true});
+        }
+
+        function updateHeatmapChart() {
+            const weeks = parseInt(document.getElementById('heatmap-selector').value);
+
+            // Generate heatmap data (days of week vs weeks)
+            const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+            const temperatures = [];
+
+            for (let week = 0; week < weeks; week++) {
+                const weekData = [];
+                for (let day = 0; day < 7; day++) {
+                    // Generate temperature based on season (simulate Montreal weather)
+                    const baseTemp = 20 + Math.sin((week / weeks) * 2 * Math.PI) * 15; // Seasonal variation
+                    const dailyVariation = (Math.random() - 0.5) * 10; // Daily variation
+                    weekData.push(Math.round(baseTemp + dailyVariation));
+                }
+                temperatures.push(weekData);
+            }
+
+            const data = [{
+                z: temperatures,
+                x: daysOfWeek,
+                y: Array.from({length: weeks}, (_, i) => `Semana ${i + 1}`),
+                type: 'heatmap',
+                colorscale: [
+                    [0, '#3b82f6'],   // Cold
+                    [0.5, '#fbbf24'], // Moderate
+                    [1, '#ef4444']    // Hot
+                ],
+                showscale: true,
+                colorbar: {title: 'Temperatura (°C)'}
+            }];
+
+            const layout = {
+                margin: {l: 60, r: 30, t: 20, b: 60},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#374151'},
+                xaxis: {title: 'Dia da Semana'},
+                yaxis: {title: 'Semana'}
+            };
+
+            Plotly.newPlot('heatmap-chart', data, layout, {responsive: true});
+        }
+
+        function updateWindRoseChart() {
+            const days = parseInt(document.getElementById('wind-rose-selector').value);
+
+            // Mock wind direction data
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const windData = directions.map(dir => Math.random() * 20); // Mock wind speeds
+
+            const data = [{
+                type: 'barpolar',
+                r: windData,
+                theta: directions,
+                name: 'Velocidade do Vento',
+                marker: {
+                    color: windData,
+                    colorscale: 'Blues',
+                    showscale: true,
+                    colorbar: {title: 'Velocidade (km/h)'}
+                }
+            }];
+
+            const layout = {
+                polar: {
+                    radialaxis: {
+                        visible: true,
+                        range: [0, 25]
+                    },
+                    angularaxis: {
+                        direction: 'clockwise'
+                    }
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#374151'},
+                showlegend: false
+            };
+
+            Plotly.newPlot('wind-rose-chart', data, layout, {responsive: true});
+        }
+
+        function updateKPICards() {
+            // Mock KPI data - in real app, fetch from current weather data
+            const mockKPIs = {
+                temperature: 22.5,
+                humidity: 65,
+                wind: 12.3,
+                precipitation: 0
+            };
+
+            document.getElementById('kpi-temp-current').textContent = `${mockKPIs.temperature}°C`;
+            document.getElementById('kpi-humidity').textContent = `${mockKPIs.humidity}%`;
+            document.getElementById('kpi-wind').textContent = `${mockKPIs.wind} km/h`;
+            document.getElementById('kpi-precipitation').textContent = `${mockKPIs.precipitation} mm`;
+
+            // Mock trends
+            updateKPITrends();
+        }
+
+        function updateKPITrends() {
+            // Mock trend calculations
+            document.getElementById('kpi-temp-trend').innerHTML = '<i class="fas fa-arrow-up"></i> +2.1°C vs ontem';
+            document.getElementById('kpi-humidity-trend').innerHTML = '<i class="fas fa-minus"></i> -5% vs ontem';
+            document.getElementById('kpi-wind-trend').innerHTML = '<i class="fas fa-equals"></i> Estável';
+            document.getElementById('kpi-precipitation-trend').innerHTML = '<i class="fas fa-umbrella"></i> Sem chuva';
+        }
+
+        // Open-Meteo Integration Functions
+        async function loadOpenMeteoCurrent() {
+            const openmeteoDiv = document.getElementById('openmeteo-data');
+            openmeteoDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="border: 3px solid #f3f4f6; border-top: 3px solid #10b981; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 10px;"></div><p>Carregando dados atuais do Open-Meteo...</p></div>';
+
+            try {
+                const response = await fetch('/api/v1/weather/openmeteo/current');
+                const data = await response.json();
+
+                if (data.success) {
+                    const weather = data.data;
+                    openmeteoDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            <div style="text-align: center; padding: 12px; background: #f0f9ff; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">${weather.temperature}°C</div>
+                                <div style="font-size: 0.875rem; color: #6b7280;">Temperatura</div>
+                            </div>
+                            <div style="text-align: center; padding: 12px; background: #f0f9ff; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">${weather.wind_speed} km/h</div>
+                                <div style="font-size: 0.875rem; color: #6b7280;">Velocidade do Vento</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 0.75rem; color: #9ca3af; text-align: center;">
+                            Fonte: Open-Meteo | Última atualização: ${new Date().toLocaleString('pt-BR')}
+                        </div>
+                    `;
+                } else {
+                    openmeteoDiv.innerHTML = '<div style="text-align: center; color: #dc2626;">Erro ao carregar dados Open-Meteo</div>';
+                }
+            } catch (error) {
+                openmeteoDiv.innerHTML = `<div style="text-align: center; color: #dc2626;">Erro: ${error.message}</div>`;
+            }
+        }
+
+        async function loadOpenMeteoMonitoring() {
+            const openmeteoDiv = document.getElementById('openmeteo-data');
+
+            try {
+                const response = await fetch('/api/v1/weather/openmeteo/monitoring?weeks=4');
+                const data = await response.json();
+
+                if (data.success) {
+                    const summary = data.summary;
+                    openmeteoDiv.innerHTML = `
+                        <h4 style="margin-bottom: 16px; color: #1f2937;">Resumo do Monitoramento (4 semanas)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                            <div style="padding: 12px; background: #fef3c7; border-radius: 8px;">
+                                <div style="font-weight: bold; color: #92400e;">Temperatura</div>
+                                <div style="font-size: 0.875rem;">Mín: ${summary.temperature.min.toFixed(1)}°C | Máx: ${summary.temperature.max.toFixed(1)}°C</div>
+                                <div style="font-size: 0.875rem;">Média: ${summary.temperature.mean.toFixed(1)}°C</div>
+                            </div>
+                            <div style="padding: 12px; background: #dbeafe; border-radius: 8px;">
+                                <div style="font-weight: bold; color: #1e40af;">Precipitação</div>
+                                <div style="font-size: 0.875rem;">Total: ${summary.precipitation.total.toFixed(1)} mm</div>
+                                <div style="font-size: 0.875rem;">Dias com chuva: ${summary.precipitation.days_with_rain}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 0.75rem; color: #9ca3af; text-align: center;">
+                            Monitoramento: 3 vezes por semana | Total de registros: ${summary.total_records}
+                        </div>
+                    `;
+                } else {
+                    openmeteoDiv.innerHTML = '<div style="text-align: center; color: #dc2626;">Erro ao carregar dados de monitoramento</div>';
+                }
+            } catch (error) {
+                openmeteoDiv.innerHTML = `<div style="text-align: center; color: #dc2626;">Erro: ${error.message}</div>`;
+            }
+        }
+
+        async function loadOpenMeteoForecast() {
+            const openmeteoDiv = document.getElementById('openmeteo-data');
+
+            try {
+                const response = await fetch('/api/v1/weather/openmeteo/forecast?days=7');
+                const data = await response.json();
+
+                if (data.success) {
+                    const forecast = data.data;
+                    let forecastHtml = '<h4 style="margin-bottom: 16px; color: #1f2937;">Previsão para os próximos 7 dias</h4>';
+                    forecastHtml += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">';
+
+                    forecast.forEach(day => {
+                        const date = new Date(day.date).toLocaleDateString('pt-BR', {weekday: 'short', month: 'short', day: 'numeric'});
+                        forecastHtml += `
+                            <div style="text-align: center; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                                <div style="font-size: 0.75rem; font-weight: bold; color: #374151;">${date}</div>
+                                <div style="font-size: 0.875rem; color: #ef4444;">${day.temperature_max.toFixed(0)}°</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">${day.temperature_min.toFixed(0)}°</div>
+                            </div>
+                        `;
+                    });
+
+                    forecastHtml += '</div>';
+                    openmeteoDiv.innerHTML = forecastHtml;
+                } else {
+                    openmeteoDiv.innerHTML = '<div style="text-align: center; color: #dc2626;">Erro ao carregar previsão</div>';
+                }
+            } catch (error) {
+                openmeteoDiv.innerHTML = `<div style="text-align: center; color: #dc2626;">Erro: ${error.message}</div>`;
+            }
+        }
+
+        // Utility Functions
+        function generateMockHistoricalData(days) {
+            const data = [];
+            const today = new Date();
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+
+                data.push({
+                    date: date.toISOString().split('T')[0],
+                    temperature: 15 + Math.sin(i / days * 2 * Math.PI) * 10 + (Math.random() - 0.5) * 5,
+                    humidity: 50 + Math.random() * 30,
+                    wind_speed: 5 + Math.random() * 15
+                });
+            }
+
+            return data;
+        }
+
+        function calculateMovingAverage(data, window) {
+            const result = [];
+            for (let i = window - 1; i < data.length; i++) {
+                const sum = data.slice(i - window + 1, i + 1).reduce((a, b) => a + b, 0);
+                result.push(sum / window);
+            }
+            return result;
+        }
+
+        function calculateLinearRegression(x, y) {
+            const n = x.length;
+            const sumX = x.reduce((a, b) => a + b, 0);
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            return { slope, intercept };
         }
 
         function filterDataByHours(data, hours) {

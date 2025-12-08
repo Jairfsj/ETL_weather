@@ -5,6 +5,7 @@ from datetime import datetime
 from ..services.database_service import DatabaseService
 from ..services.alert_service import AlertService
 from ..services.aeris_weather_service import AerisWeatherService
+from ..services.open_meteo_service import OpenMeteoService
 
 logger = logging.getLogger(__name__)
 weather_bp = Blueprint('weather', __name__)
@@ -23,6 +24,11 @@ def get_alert_service() -> AlertService:
 def get_aeris_weather_service() -> AerisWeatherService:
     """Get AerisWeather service from app context"""
     return current_app.config['aeris_weather_service']
+
+
+def get_open_meteo_service() -> OpenMeteoService:
+    """Get Open-Meteo service from app context"""
+    return current_app.config['open_meteo_service']
 
 
 @weather_bp.route('/health')
@@ -478,6 +484,241 @@ def generate_aeris_historical_csvs():
 
     except Exception as e:
         logger.error(f"Error generating historical CSV files: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# Open-Meteo API endpoints (Melhor opção para monitoramento semi-real)
+
+@weather_bp.route('/openmeteo/current')
+def get_openmeteo_current():
+    """Get current weather data from Open-Meteo API (best for real-time monitoring)"""
+    try:
+        openmeteo_service = get_open_meteo_service()
+        weather_data = openmeteo_service.get_current_weather()
+
+        if weather_data is None:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to fetch current weather data from Open-Meteo'
+            }), 503
+
+        return jsonify({
+            'success': True,
+            'data': weather_data,
+            'source': 'Open-Meteo',
+            'note': 'Best API for real-time Montreal monitoring (no API key required)'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching Open-Meteo current weather: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/forecast')
+def get_openmeteo_forecast():
+    """Get weather forecast from Open-Meteo API"""
+    try:
+        days = request.args.get('days', default=7, type=int)
+        days = min(max(days, 1), 16)  # Limit between 1 and 16 days
+
+        openmeteo_service = get_open_meteo_service()
+        forecast_data = openmeteo_service.get_forecast_weather(days)
+
+        if forecast_data is None or len(forecast_data) == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to fetch forecast data from Open-Meteo'
+            }), 503
+
+        return jsonify({
+            'success': True,
+            'data': forecast_data,
+            'days': len(forecast_data),
+            'source': 'Open-Meteo'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching Open-Meteo forecast: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/historical')
+def get_openmeteo_historical():
+    """Get historical weather data from Open-Meteo API"""
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return jsonify({
+                'success': False,
+                'error': 'Both start_date and end_date are required (format: YYYY-MM-DD)'
+            }), 400
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+
+        if start_date > end_date:
+            return jsonify({
+                'success': False,
+                'error': 'start_date must be before or equal to end_date'
+            }), 400
+
+        # Check date range (max 1 year for Open-Meteo)
+        date_diff = (end_date - start_date).days
+        if date_diff > 365:
+            return jsonify({
+                'success': False,
+                'error': 'Date range cannot exceed 365 days for Open-Meteo API'
+            }), 400
+
+        openmeteo_service = get_open_meteo_service()
+        df = openmeteo_service.get_historical_weather(start_date, end_date)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': f'No historical data found for date range {start_date_str} to {end_date_str}'
+            }), 404
+
+        # Convert DataFrame to dict for JSON response
+        result = df.to_dict('records')
+
+        return jsonify({
+            'success': True,
+            'data': result,
+            'date_range': {
+                'start': start_date_str,
+                'end': end_date_str,
+                'days': len(result)
+            },
+            'source': 'Open-Meteo',
+            'note': 'Free historical data up to 60 years available'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching Open-Meteo historical data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/monitoring')
+def get_openmeteo_monitoring():
+    """Get weekly monitoring data (3-4 times per week) from Open-Meteo API"""
+    try:
+        weeks_back = request.args.get('weeks', default=4, type=int)
+        weeks_back = min(max(weeks_back, 1), 52)  # Limit between 1 and 52 weeks
+
+        openmeteo_service = get_open_meteo_service()
+        df = openmeteo_service.get_weekly_monitoring_data(weeks_back)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': f'No monitoring data found for {weeks_back} weeks back'
+            }), 404
+
+        # Convert DataFrame to dict for JSON response
+        result = df.to_dict('records')
+
+        # Generate summary
+        summary = openmeteo_service.get_monitoring_summary(weeks_back)
+
+        return jsonify({
+            'success': True,
+            'data': result,
+            'summary': summary,
+            'monitoring_schedule': '3 times per week (Mon, Wed, Fri)',
+            'weeks_back': weeks_back,
+            'total_records': len(result),
+            'source': 'Open-Meteo',
+            'note': 'Optimized for semi-real monitoring (3-4 times per week)'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching Open-Meteo monitoring data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/historical/csv')
+def generate_openmeteo_historical_csv():
+    """Generate CSV file with historical weather data from Open-Meteo"""
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return jsonify({
+                'success': False,
+                'error': 'Both start_date and end_date are required (format: YYYY-MM-DD)'
+            }), 400
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+
+        if start_date > end_date:
+            return jsonify({
+                'success': False,
+                'error': 'start_date must be before or equal to end_date'
+            }), 400
+
+        openmeteo_service = get_open_meteo_service()
+        df = openmeteo_service.get_historical_weather(start_date, end_date)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': 'No data available for CSV generation'
+            }), 404
+
+        csv_path = openmeteo_service.save_to_csv(df)
+
+        if csv_path is None:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to save CSV file'
+            }), 500
+
+        return jsonify({
+            'success': True,
+            'message': 'Open-Meteo historical CSV generated successfully',
+            'file_path': csv_path,
+            'date_range': {
+                'start': start_date_str,
+                'end': end_date_str,
+                'days': len(df)
+            },
+            'source': 'Open-Meteo'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error generating Open-Meteo historical CSV: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
