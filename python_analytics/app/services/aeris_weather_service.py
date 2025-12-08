@@ -36,6 +36,14 @@ class AerisWeatherService:
         # Montreal location
         self.montreal_location = "montreal,ca"
 
+        # Open-Meteo API configuration
+        self.open_meteo_base_url = "https://api.open-meteo.com/v1/forecast"
+        self.open_meteo_historical_url = "https://archive-api.open-meteo.com/v1/archive"
+        self.montreal_coords = {
+            "latitude": 45.5019,
+            "longitude": -73.5673
+        }
+
         # Historical fields (include dateTimeISO for historical data)
         self.historical_fields = [
             'periods.dateTimeISO',
