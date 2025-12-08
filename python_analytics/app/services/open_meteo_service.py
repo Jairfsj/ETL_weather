@@ -218,20 +218,18 @@ class OpenMeteoService:
             return None
 
     def get_weekly_monitoring_data(self, weeks_back: int = 4) -> Optional[pd.DataFrame]:
-        """Busca dados semanais para monitoramento (3-4 vezes por semana)"""
-
+        """Busca dados semanais para monitoramento (3 vezes por semana)"""
         end_date = date.today()
         start_date = end_date - timedelta(weeks=weeks_back)
 
         df = self.get_historical_weather(start_date, end_date)
 
         if df is not None:
-            # Filtrar para dados 3-4 vezes por semana (ex: segunda, quarta, sexta)
+            # Filtrar para 3 dias por semana (segunda, quarta, sexta)
             df['weekday'] = df['date'].dt.weekday
-            # 0=Segunda, 2=Quarta, 4=Sexta (3 dias por semana)
             monitoring_days = df[df['weekday'].isin([0, 2, 4])].copy()
 
-            logger.info(f"Weekly monitoring data: {len(monitoring_days)} records for {weeks_back} weeks")
+            logger.info(f"Weekly monitoring data: {len(monitoring_days)} records")
             return monitoring_days
 
         return None
