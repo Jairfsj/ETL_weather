@@ -135,10 +135,12 @@ def main():
         print(f"✅ CSVs gerados com sucesso!")
         print(f"   Arquivos criados: {len(result['files'])}")
         print(f"   Período: {result['date_range']['start']} até {result['date_range']['end']}")
-        print("   Arquivos:"        for file_path in result['files']:
+        print("   Arquivos:")
+        for file_path in result['files']:
             print(f"     - {file_path}")
     else:
-        print("❌ Falha ao gerar CSVs"        if result:
+        print("❌ Falha ao gerar CSVs")
+        if result:
             print(f"   Erro: {result.get('error', 'Erro desconhecido')}")
 
     # Exemplo 4: Uso avançado com campos específicos
@@ -163,7 +165,8 @@ def main():
         print(f"✅ Dados encontrados com campos específicos para {yesterday}")
         print(f"   Localizações: {result['locations']}")
         print(f"   Registros: {result['count']}")
-        print("   Campos solicitados:"        for field in custom_fields:
+        print("   Campos solicitados:")
+        for field in custom_fields:
             print(f"     - {field}")
     else:
         print(f"❌ Nenhum dado encontrado com campos específicos")
