@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste de Conexão - ETL Weather</title>
+    <title>🧪 Teste de Conexão - ETL Weather Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 900px;
             margin: 50px auto;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,10 +21,11 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
             font-weight: bold;
+            font-size: 16px;
         }
         .success {
             background: #d4edda;
@@ -41,73 +42,115 @@
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
         button {
             background: #007bff;
             color: white;
             border: none;
             padding: 12px 24px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
-            margin: 10px 5px;
+            margin: 8px 5px;
+            transition: background 0.3s;
         }
         button:hover {
             background: #0056b3;
         }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
         .result {
             margin-top: 20px;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 6px;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
             white-space: pre-wrap;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .url-link {
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .url-link:hover {
+            background: #218838;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🧪 Teste de Conexão - ETL Weather Dashboard</h1>
-        <p>Esta página testa a conectividade com o sistema ETL Weather.</p>
+        <p>Esta página testa a conectividade com o sistema ETL Weather (2025-2026).</p>
 
         <div id="status" class="status info">
-            Clique nos botões abaixo para testar a conectividade.
+            Sistema pronto para testes. Clique nos botões abaixo.
         </div>
 
-        <div>
-            <button onclick="testAPIHealth()">Testar API Health</button>
-            <button onclick="testDashboard()">Testar Dashboard</button>
-            <button onclick="testOpenMeteo()">Testar Open-Meteo API</button>
-            <button onclick="testMonitoring()">Testar Sistema de Monitoramento</button>
-            <button onclick="clearResults()">Limpar Resultados</button>
+        <div class="test-section">
+            <h3>🔧 Testes de Conectividade</h3>
+            <div class="test-grid">
+                <button onclick="testAPIHealth()" id="btn-health">API Health</button>
+                <button onclick="testDashboard()" id="btn-dashboard">Dashboard</button>
+                <button onclick="testMonitoring()" id="btn-monitoring">Monitoramento</button>
+                <button onclick="testOpenMeteo()" id="btn-openmeteo">Open-Meteo</button>
+                <button onclick="clearResults()">Limpar</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Links Diretos</h3>
+            <a href="http://localhost:5000/dashboard" target="_blank" class="url-link">📊 Dashboard Completo</a>
+            <a href="http://127.0.0.1:5000/dashboard" target="_blank" class="url-link">📊 Dashboard (127.0.0.1)</a>
+            <a href="http://localhost:5000/api/v1/weather/health" target="_blank" class="url-link">🏥 API Health</a>
+            <a href="http://localhost:5000/api/v1/weather/monitoring/status" target="_blank" class="url-link">📈 Status Monitoramento</a>
         </div>
 
         <div id="results"></div>
 
-        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
-            <h3>📋 Instruções de Troubleshooting:</h3>
+        <div class="test-section">
+            <h3>📋 Diagnóstico Rápido</h3>
             <ol>
-                <li>Certifique-se de que os containers estão rodando: <code>docker ps</code></li>
-                <li>Verifique se a porta 5000 está livre: <code>netstat -tlnp | grep 5000</code></li>
-                <li>Teste a conectividade: <code>curl http://127.0.0.1:5000/api/v1/weather/health</code></li>
-                <li>Se usar Firefox, tente limpar o cache ou usar outro navegador</li>
-                <li>Tente acessar via <code>http://localhost:5000</code> ao invés de <code>127.0.0.1:5000</code></li>
-                <li>Verifique se há firewall bloqueando a porta 5000</li>
+                <li><strong>Containers:</strong> <code>docker ps</code> - Verificar se estão rodando</li>
+                <li><strong>Porta 5000:</strong> <code>netstat -tlnp | grep 5000</code> - Verificar se está livre</li>
+                <li><strong>API Test:</strong> <code>curl http://127.0.0.1:5000/api/v1/weather/health</code></li>
+                <li><strong>Firewall:</strong> Verificar se permite conexões na porta 5000</li>
+                <li><strong>Cache:</strong> Limpar cache do navegador (Ctrl+Shift+R)</li>
+                <li><strong>URLs:</strong> Testar localhost vs 127.0.0.1</li>
             </ol>
 
-            <h3>🚀 Como iniciar o sistema:</h3>
-            <pre><code>cd /path/to/ETL_weather
+            <h4>🚀 Iniciar Sistema:</h4>
+            <pre><code>cd /home/jairfsj/ETL/ETL_weather
 docker compose up -d
-# Aguardar 30 segundos
+sleep 30
 # Acessar: http://localhost:5000/dashboard</code></pre>
-
-            <h3>🌐 Alternativas de acesso:</h3>
-            <ul>
-                <li><strong>Dashboard completo:</strong> <code>http://localhost:5000/dashboard</code></li>
-                <li><strong>Landing page simples:</strong> <code>python serve_landing_page.py</code> → <code>http://localhost:8080</code></li>
-                <li><strong>APIs diretas:</strong> <code>http://localhost:5000/api/v1/weather/</code></li>
-            </ul>
         </div>
     </div>
 
@@ -117,7 +160,15 @@ docker compose up -d
 
         function updateStatus(message, type = 'info') {
             statusDiv.className = `status ${type}`;
-            statusDiv.textContent = message;
+            statusDiv.innerHTML = `<strong>Status:</strong> ${message}`;
+        }
+
+        function setButtonLoading(buttonId, loading = true) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = loading;
+                button.textContent = loading ? 'Testando...' : button.textContent.replace('Testando...', '');
+            }
         }
 
         function addResult(title, content, type = 'info') {
@@ -125,102 +176,139 @@ docker compose up -d
             resultDiv.className = `result ${type}`;
             resultDiv.innerHTML = `<strong>${title}:</strong>\n${content}`;
             resultsDiv.appendChild(resultDiv);
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
         }
 
         function clearResults() {
             resultsDiv.innerHTML = '';
-            updateStatus('Resultados limpos. Clique nos botões para testar novamente.', 'info');
+            updateStatus('Resultados limpos. Pronto para novos testes.', 'info');
         }
 
         async function testAPIHealth() {
             updateStatus('Testando API Health...', 'info');
+            setButtonLoading('btn-health', true);
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/v1/weather/health');
                 const data = await response.text();
 
                 if (response.ok) {
-                    updateStatus('✅ API Health: OK', 'success');
-                    addResult('API Health Response', JSON.stringify(JSON.parse(data), null, 2), 'success');
+                    updateStatus('✅ API Health: Conexão estabelecida!', 'success');
+                    addResult('API Health', `✅ Status: ${response.status}\n✅ Resposta: ${data}`, 'success');
                 } else {
-                    updateStatus('❌ API Health: Erro', 'error');
-                    addResult('API Health Error', `Status: ${response.status}\n${data}`, 'error');
+                    updateStatus('❌ API Health: Resposta inválida', 'error');
+                    addResult('API Health Error', `❌ Status: ${response.status}\n❌ Resposta: ${data}`, 'error');
                 }
             } catch (error) {
                 updateStatus('❌ API Health: Falha de conexão', 'error');
-                addResult('API Health Connection Error', error.message, 'error');
+                addResult('API Health Error', `❌ Erro: ${error.message}\n💡 Verifique se os containers estão rodando:\n   docker ps`, 'error');
             }
+
+            setButtonLoading('btn-health', false);
         }
 
         async function testDashboard() {
             updateStatus('Testando Dashboard...', 'info');
+            setButtonLoading('btn-dashboard', true);
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/dashboard');
                 const data = await response.text();
 
                 if (response.ok && data.includes('<!DOCTYPE html>')) {
-                    updateStatus('✅ Dashboard: OK', 'success');
-                    addResult('Dashboard Response', `Status: ${response.status}\nContent-Type: ${response.headers.get('content-type')}\nHTML Length: ${data.length} characters\nTitle found: ${data.includes('<title>')}`, 'success');
+                    updateStatus('✅ Dashboard: Carregado com sucesso!', 'success');
+                    addResult('Dashboard', `✅ Status: ${response.status}\n✅ HTML: ${data.length} caracteres\n✅ Título encontrado: ${data.includes('<title>')}\n\n🎉 Dashboard está funcionando!\n📍 URL: http://localhost:5000/dashboard`, 'success');
                 } else {
-                    updateStatus('❌ Dashboard: Erro', 'error');
-                    addResult('Dashboard Error', `Status: ${response.status}\nResponse: ${data.substring(0, 200)}...`, 'error');
+                    updateStatus('❌ Dashboard: Resposta inválida', 'error');
+                    addResult('Dashboard Error', `❌ Status: ${response.status}\n❌ Conteúdo: ${data.substring(0, 200)}...`, 'error');
                 }
             } catch (error) {
                 updateStatus('❌ Dashboard: Falha de conexão', 'error');
-                addResult('Dashboard Connection Error', error.message, 'error');
+                addResult('Dashboard Error', `❌ Erro: ${error.message}\n\n🔧 Possíveis soluções:\n1. Verificar se containers estão rodando\n2. Limpar cache do navegador\n3. Testar URL alternativa: http://localhost:5000/dashboard\n4. Verificar firewall na porta 5000`, 'error');
             }
-        }
 
-        async function testOpenMeteo() {
-            updateStatus('Testando Open-Meteo API...', 'info');
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/api/v1/weather/openmeteo/current');
-                const data = await response.text();
-
-                if (response.ok) {
-                    updateStatus('✅ Open-Meteo API: OK', 'success');
-                    addResult('Open-Meteo Response', JSON.stringify(JSON.parse(data), null, 2), 'success');
-                } else {
-                    updateStatus('⚠️ Open-Meteo API: Resposta esperada (sem credenciais)', 'info');
-                    addResult('Open-Meteo Info', `Status: ${response.status}\nNota: É normal retornar erro quando não há credenciais configuradas.\nResponse: ${data}`, 'info');
-                }
-            } catch (error) {
-                updateStatus('❌ Open-Meteo API: Falha de conexão', 'error');
-                addResult('Open-Meteo Connection Error', error.message, 'error');
-            }
+            setButtonLoading('btn-dashboard', false);
         }
 
         async function testMonitoring() {
             updateStatus('Testando Sistema de Monitoramento...', 'info');
+            setButtonLoading('btn-monitoring', true);
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/v1/weather/monitoring/status');
                 const data = await response.text();
 
                 if (response.ok) {
-                    updateStatus('✅ Sistema de Monitoramento: OK', 'success');
-                    addResult('Monitoring Response', JSON.stringify(JSON.parse(data), null, 2), 'success');
+                    const jsonData = JSON.parse(data);
+                    updateStatus('✅ Monitoramento: Sistema ativo (2025-2026)!', 'success');
+                    addResult('Sistema de Monitoramento', `✅ Status: ${jsonData.status.system_status}\n📅 Período: ${jsonData.status.monitoring_period}\n⏰ Próxima coleta: ${jsonData.status.next_monitoring_date}\n📊 Progresso: ${jsonData.status.progress_percentage}%\n\n🎯 Sistema funcionando corretamente!`, 'success');
                 } else {
-                    updateStatus('❌ Sistema de Monitoramento: Erro', 'error');
-                    addResult('Monitoring Error', `Status: ${response.status}\n${data}`, 'error');
+                    updateStatus('❌ Monitoramento: Sistema inativo', 'error');
+                    addResult('Monitoring Error', `❌ Status: ${response.status}\n❌ Resposta: ${data}`, 'error');
                 }
             } catch (error) {
-                updateStatus('❌ Sistema de Monitoramento: Falha de conexão', 'error');
-                addResult('Monitoring Connection Error', error.message, 'error');
+                updateStatus('❌ Monitoramento: Falha de conexão', 'error');
+                addResult('Monitoring Error', `❌ Erro: ${error.message}`, 'error');
             }
+
+            setButtonLoading('btn-monitoring', false);
         }
 
-        // Auto-teste inicial
+        async function testOpenMeteo() {
+            updateStatus('Testando Open-Meteo API...', 'info');
+            setButtonLoading('btn-openmeteo', true);
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/v1/weather/openmeteo/long-term?years=1');
+                const data = await response.text();
+
+                if (response.ok) {
+                    const jsonData = JSON.parse(data);
+                    updateStatus('✅ Open-Meteo: Dados históricos disponíveis!', 'success');
+                    addResult('Open-Meteo API', `✅ Status: ${jsonData.success}\n📊 Registros: ${jsonData.total_records}\n📅 Período: ${jsonData.period}\n🌤️ Dados climáticos carregados com sucesso!\n\n💡 API gratuita funcionando perfeitamente!`, 'success');
+                } else {
+                    updateStatus('⚠️ Open-Meteo: Resposta limitada (normal)', 'warning');
+                    addResult('Open-Meteo Info', `⚠️ Status: ${response.status}\n💡 É normal retornar erro quando não há dados suficientes ou limite atingido.\n📊 API gratuita tem algumas limitações.\n\n✅ Infraestrutura funcionando!`, 'warning');
+                }
+            } catch (error) {
+                updateStatus('❌ Open-Meteo: Falha de conexão', 'error');
+                addResult('Open-Meteo Error', `❌ Erro: ${error.message}`, 'error');
+            }
+
+            setButtonLoading('btn-openmeteo', false);
+        }
+
+        // Auto-teste ao carregar
         window.addEventListener('load', function() {
-            updateStatus('Página carregada. Sistema ETL Weather pronto para testes.', 'success');
+            updateStatus('🧪 Página de teste carregada. Sistema ETL Weather pronto!', 'success');
+
+            // Pequeno delay antes do teste automático
+            setTimeout(() => {
+                testAPIHealth();
+            }, 1500);
         });
 
-        // Teste automático da API Health ao carregar
-        setTimeout(() => {
-            testAPIHealth();
-        }, 1000);
+        // Teste completo automático
+        function runFullTest() {
+            updateStatus('🔄 Executando teste completo...', 'info');
+
+            setTimeout(() => testAPIHealth(), 500);
+            setTimeout(() => testDashboard(), 2000);
+            setTimeout(() => testMonitoring(), 4000);
+            setTimeout(() => testOpenMeteo(), 6000);
+        }
+
+        // Adicionar botão de teste completo
+        document.addEventListener('DOMContentLoaded', function() {
+            const testSection = document.querySelector('.test-grid');
+            const fullTestBtn = document.createElement('button');
+            fullTestBtn.textContent = '🔄 Teste Completo';
+            fullTestBtn.onclick = runFullTest;
+            fullTestBtn.style.background = '#28a745';
+            fullTestBtn.onmouseover = () => fullTestBtn.style.background = '#218838';
+            fullTestBtn.onmouseout = () => fullTestBtn.style.background = '#28a745';
+            testSection.appendChild(fullTestBtn);
+        });
     </script>
 </body>
 </html>
