@@ -4,9 +4,24 @@ Exemplo de uso dos dados históricos do AerisWeather no ETL Weather Dashboard
 
 Este script demonstra como usar os novos endpoints de dados históricos
 para baixar e processar dados climáticos históricos de Montreal.
+
+IMPORTANTE: Este script deve ser executado com as dependências Python instaladas.
+Para executar dentro do container Docker:
+
+    docker compose exec python_analytics python /app/historical_weather_example.py
+
+Ou instale as dependências localmente:
+
+    pip install requests pandas
 """
 
-import requests
+try:
+    import requests
+except ImportError:
+    print("❌ Erro: Módulo 'requests' não encontrado.")
+    print("📦 Para instalar: pip install requests")
+    print("🐳 Ou execute dentro do container: docker compose exec python_analytics python historical_weather_example.py")
+    exit(1)
 import pandas as pd
 from datetime import datetime, timedelta
 import json
