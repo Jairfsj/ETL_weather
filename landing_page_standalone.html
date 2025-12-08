@@ -111,6 +111,45 @@
             color: white;
         }
 
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .language-selector, .unit-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lang-btn, .unit-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn:hover, .unit-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .lang-btn.active, .unit-btn.active {
+            background: white;
+            color: #1f2937;
+            border-color: white;
+        }
+
         .header h1 {
             font-size: 3.5rem;
             font-weight: 800;
@@ -621,8 +660,8 @@
                 <div class="card-header">
                     <div class="card-icon">🌡️</div>
                     <div>
-                        <h2 class="card-title">Condições Atuais</h2>
-                        <p class="card-subtitle">Dados climáticos atuais de Montreal</p>
+                        <h2 class="card-title" data-lang-key="currentWeather">Current Conditions</h2>
+                        <p class="card-subtitle" data-lang-key="currentWeatherDesc">Current weather data for Montreal</p>
                     </div>
                 </div>
 
@@ -639,8 +678,8 @@
                 <div class="card-header">
                     <div class="card-icon">📅</div>
                     <div>
-                        <h2 class="card-title">Previsão</h2>
-                        <p class="card-subtitle">Próximos 7 dias</p>
+                        <h2 class="card-title" data-lang-key="forecast">Forecast</h2>
+                        <p class="card-subtitle" data-lang-key="forecastDays">Next 7 days</p>
                     </div>
                 </div>
 
@@ -658,8 +697,8 @@
             <div class="card-header">
                 <div class="card-icon">📊</div>
                 <div>
-                    <h2 class="card-title">Análise Climática</h2>
-                    <p class="card-subtitle">Tendências e padrões meteorológicos</p>
+                    <h2 class="card-title" data-lang-key="climateAnalysis">Climate Analysis</h2>
+                    <p class="card-subtitle" data-lang-key="climateAnalysisDesc">Trends and weather patterns</p>
                 </div>
             </div>
 
@@ -735,6 +774,223 @@
     <script>
         // Global variables
         let weatherChart = null;
+        let currentLanguage = 'en';
+        let currentTempUnit = 'celsius';
+
+        // Language translations
+        const translations = {
+            en: {
+                title: "🌤️ Montreal Climate Monitor",
+                subtitle: "Real-time climate monitoring of Montreal, Quebec. Precise data and interactive visualizations to track current weather conditions.",
+                systemOnline: "System Online",
+                demoData: "Demonstration - Simulated Data",
+                loadDemoBtn: "🔄 Load Demo Data",
+                currentWeather: "Current Conditions",
+                currentWeatherDesc: "Current weather data for Montreal",
+                forecast: "Forecast",
+                forecastDays: "Next 7 days",
+                climateAnalysis: "Climate Analysis",
+                climateAnalysisDesc: "Trends and weather patterns",
+                aboutMontreal: "About Montreal",
+                aboutMontrealDesc: "City data",
+                dataSource: "Data Source",
+                dataSourceDesc: "APIs used",
+                temperature: "Temperature",
+                humidity: "Humidity",
+                wind: "Wind",
+                pressure: "Pressure",
+                dewPoint: "Dew Point",
+                weatherMain: "Conditions",
+                coordinates: "Coordinates",
+                fahrenheit: "Fahrenheit",
+                celsius: "Celsius",
+                location: "Location",
+                timezone: "Timezone",
+                altitude: "Altitude",
+                population: "Population",
+                current: "Current",
+                forecast7days: "7-Day Forecast",
+                analysis: "Analysis",
+                dry: "Dry",
+                systemStatus: "System Status",
+                dataFrequency: "Data Frequency",
+                currentData: "Current data:",
+                forecastData: "Forecast:",
+                historicalData: "Historical data:",
+                apiUpdated: "Automatically updated",
+                hourlyUpdate: "Updated every hour",
+                openMeteo: "Open-Meteo API",
+                freeApi: "Free API",
+                unlimited: "Unlimited access",
+                noKey: "No API key required",
+                demoNote: "Demo: This page uses simulated data. For real data, connect to the complete ETL system."
+            },
+            pt: {
+                title: "🌤️ Monitor Climático Montreal",
+                subtitle: "Monitoramento climático em tempo real de Montreal, Quebec. Dados precisos e visualizações interativas para acompanhar as condições meteorológicas atuais.",
+                systemOnline: "Sistema Online",
+                demoData: "Demonstração - Dados Simulados",
+                loadDemoBtn: "🔄 Carregar Dados de Demonstração",
+                currentWeather: "Condições Atuais",
+                currentWeatherDesc: "Dados climáticos atuais de Montreal",
+                forecast: "Previsão",
+                forecastDays: "Próximos 7 dias",
+                climateAnalysis: "Análise Climática",
+                climateAnalysisDesc: "Tendências e padrões meteorológicos",
+                aboutMontreal: "Sobre Montreal",
+                aboutMontrealDesc: "Dados da cidade",
+                dataSource: "Fonte de Dados",
+                dataSourceDesc: "APIs utilizadas",
+                temperature: "Temperatura",
+                humidity: "Umidade",
+                wind: "Vento",
+                pressure: "Pressão",
+                dewPoint: "Ponto de Orvalho",
+                weatherMain: "Condições",
+                coordinates: "Coordenadas",
+                fahrenheit: "Fahrenheit",
+                celsius: "Celsius",
+                location: "Localização",
+                timezone: "Fuso Horário",
+                altitude: "Altitude",
+                population: "População",
+                current: "Atual",
+                forecast7days: "Previsão 7 Dias",
+                analysis: "Análise",
+                dry: "Seco",
+                systemStatus: "Status do Sistema",
+                dataFrequency: "Frequência dos Dados",
+                currentData: "Dados atuais:",
+                forecastData: "Previsão:",
+                historicalData: "Dados históricos:",
+                apiUpdated: "Atualizados automaticamente",
+                hourlyUpdate: "Atualizados a cada hora",
+                openMeteo: "API Open-Meteo",
+                freeApi: "API Gratuita",
+                unlimited: "Acesso ilimitado",
+                noKey: "Sem necessidade de chave API",
+                demoNote: "Demo: Esta página usa dados simulados. Para dados reais, conecte-se ao sistema ETL completo."
+            },
+            fr: {
+                title: "🌤️ Moniteur Climatique Montréal",
+                subtitle: "Surveillance climatique en temps réel de Montréal, Québec. Données précises et visualisations interactives pour suivre les conditions météorologiques actuelles.",
+                systemOnline: "Système En Ligne",
+                demoData: "Démonstration - Données Simulées",
+                loadDemoBtn: "🔄 Charger Données Démo",
+                currentWeather: "Conditions Actuelles",
+                currentWeatherDesc: "Données météorologiques actuelles de Montréal",
+                forecast: "Prévisions",
+                forecastDays: "7 prochains jours",
+                climateAnalysis: "Analyse Climatique",
+                climateAnalysisDesc: "Tendances et modèles météorologiques",
+                aboutMontreal: "À Propos de Montréal",
+                aboutMontrealDesc: "Données de la ville",
+                dataSource: "Source de Données",
+                dataSourceDesc: "APIs utilisées",
+                temperature: "Température",
+                humidity: "Humidité",
+                wind: "Vent",
+                pressure: "Pression",
+                dewPoint: "Point de Rosée",
+                weatherMain: "Conditions",
+                coordinates: "Coordonnées",
+                fahrenheit: "Fahrenheit",
+                celsius: "Celsius",
+                location: "Emplacement",
+                timezone: "Fuseau Horaire",
+                altitude: "Altitude",
+                population: "Population",
+                current: "Actuel",
+                forecast7days: "Prévisions 7 Jours",
+                analysis: "Analyse",
+                dry: "Sec",
+                systemStatus: "État du Système",
+                dataFrequency: "Fréquence des Données",
+                currentData: "Données actuelles:",
+                forecastData: "Prévisions:",
+                historicalData: "Données historiques:",
+                apiUpdated: "Mis à jour automatiquement",
+                hourlyUpdate: "Mis à jour chaque heure",
+                openMeteo: "API Open-Meteo",
+                freeApi: "API Gratuite",
+                unlimited: "Accès illimité",
+                noKey: "Aucune clé API requise",
+                demoNote: "Démo: Cette page utilise des données simulées. Pour des données réelles, connectez-vous au système ETL complet."
+            }
+        };
+
+        // Temperature conversion functions
+        function celsiusToFahrenheit(celsius) {
+            return (celsius * 9/5) + 32;
+        }
+
+        function fahrenheitToCelsius(fahrenheit) {
+            return (fahrenheit - 32) * 5/9;
+        }
+
+        function formatTemperature(temp, unit) {
+            if (unit === 'fahrenheit') {
+                temp = celsiusToFahrenheit(temp);
+            }
+            return `${temp > 0 ? '+' : ''}${temp.toFixed(1)}°${unit === 'celsius' ? 'C' : 'F'}`;
+        }
+
+        // Language functions
+        function setLanguage(lang) {
+            currentLanguage = lang;
+
+            // Update active language button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="setLanguage('${lang}')"]`).classList.add('active');
+
+            // Update all text elements
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            // Update page title
+            document.title = translations[lang].title || "🌤️ Montreal Climate Monitor";
+
+            // Update meta description
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', translations[lang].subtitle || "Monitor Montreal's climate in real-time");
+            }
+
+            // Refresh data display with new language
+            updateAllDisplays();
+        }
+
+        function setTemperatureUnit(unit) {
+            currentTempUnit = unit;
+
+            // Update active unit button
+            document.querySelectorAll('.unit-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="setTemperatureUnit('${unit}')"]`).classList.add('active');
+
+            // Refresh temperature displays
+            updateAllDisplays();
+        }
+
+        function updateAllDisplays() {
+            // Update current weather
+            if (demoWeather) {
+                displayCurrentWeather(demoWeather);
+            }
+
+            // Update forecast
+            if (demoForecast) {
+                displayForecast(demoForecast);
+            }
+
+            // Update chart
+            if (demoMonitoring) {
+                displayChart(demoMonitoring.data, demoMonitoring.summary);
+            }
+        }
 
         // Demo data
         const demoWeather = {
@@ -788,11 +1044,12 @@
         // Display current weather data
         function displayCurrentWeather(weather) {
             const content = document.getElementById('current-weather-content');
+            const lang = translations[currentLanguage];
 
             content.innerHTML = `
                 <div class="weather-main">
-                    <div class="temperature">${weather.temperature}°C</div>
-                    <div class="feels-like">Sensação térmica: ${weather.feels_like}°C</div>
+                    <div class="temperature">${formatTemperature(weather.temperature, currentTempUnit)}</div>
+                    <div class="feels-like">${lang.feelsLike || 'Feels like'}: ${formatTemperature(weather.feels_like, currentTempUnit)}</div>
                     <div class="weather-description">${weather.weather_main}</div>
                     <div class="location">${weather.location}</div>
                 </div>
@@ -800,19 +1057,19 @@
                 <div class="weather-details">
                     <div class="detail-item">
                         <div class="detail-value">${weather.wind_speed} km/h</div>
-                        <div class="detail-label">Vento</div>
+                        <div class="detail-label">${lang.wind}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-value">${weather.humidity}%</div>
-                        <div class="detail-label">Umidade</div>
+                        <div class="detail-label">${lang.humidity}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-value">${weather.pressure} hPa</div>
-                        <div class="detail-label">Pressão</div>
+                        <div class="detail-label">${lang.pressure}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-value">--°C</div>
-                        <div class="detail-label">Ponto de Orvalho</div>
+                        <div class="detail-value">--°${currentTempUnit === 'celsius' ? 'C' : 'F'}</div>
+                        <div class="detail-label">${lang.dewPoint}</div>
                     </div>
                 </div>
             `;

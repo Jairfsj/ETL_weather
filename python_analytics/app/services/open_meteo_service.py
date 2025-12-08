@@ -236,6 +236,99 @@ class OpenMeteoService:
 
         return None
 
+    def get_long_term_monitoring_data(self, years: int = 2) -> Optional[pd.DataFrame]:
+        """Busca dados de monitoramento de longo prazo (até 2026)"""
+
+        end_date = date.today()
+        start_date = end_date - timedelta(days=365 * years)
+
+        logger.info(f"Fetching long-term monitoring data from {start_date} to {end_date}")
+
+        df = self.get_historical_weather(start_date, end_date)
+
+        if df is not None:
+            # Filtrar para dados de monitoramento (3 vezes por semana)
+            df['weekday'] = df['date'].dt.weekday
+            monitoring_days = df[df['weekday'].isin([0, 2, 4])].copy()  # Mon, Wed, Fri
+
+            # Adicionar colunas de análise
+            monitoring_days['year'] = monitoring_days['date'].dt.year
+            monitoring_days['month'] = monitoring_days['date'].dt.month
+            monitoring_days['season'] = monitoring_days['date'].dt.month.map({
+                12: 'Winter', 1: 'Winter', 2: 'Winter',
+                3: 'Spring', 4: 'Spring', 5: 'Spring',
+                6: 'Summer', 7: 'Summer', 8: 'Summer',
+                9: 'Fall', 10: 'Fall', 11: 'Fall'
+            })
+
+            logger.info(f"Long-term monitoring data: {len(monitoring_days)} records for {years} years")
+            return monitoring_days
+
+        return None
+
+    def get_seasonal_analysis(self, years: int = 2) -> Optional[Dict[str, pd.DataFrame]]:
+        """Análise sazonal dos dados climáticos"""
+
+        df = self.get_long_term_monitoring_data(years)
+
+        if df is None or df.empty:
+            return None
+
+        seasonal_data = {}
+
+        seasons = ['Winter', 'Spring', 'Summer', 'Fall']
+
+        for season in seasons:
+            season_df = df[df['season'] == season].copy()
+
+            if not season_df.empty:
+                seasonal_data[season] = {
+                    'data': season_df,
+                    'summary': {
+                        'temperature_avg': season_df['temperature_mean'].mean(),
+                        'temperature_max': season_df['temperature_max'].max(),
+                        'temperature_min': season_df['temperature_min'].min(),
+                        'humidity_avg': season_df['humidity_mean'].mean(),
+                        'precipitation_total': season_df['precipitation'].sum(),
+                        'precipitation_avg': season_df['precipitation'].mean(),
+                        'wind_avg': season_df['wind_speed_mean'].mean(),
+                        'record_count': len(season_df)
+                    }
+                }
+
+        logger.info(f"Seasonal analysis completed for {years} years")
+        return seasonal_data
+
+    def get_yearly_trends(self, years: int = 2) -> Optional[Dict[str, pd.DataFrame]]:
+        """Análise de tendências anuais"""
+
+        df = self.get_long_term_monitoring_data(years)
+
+        if df is None or df.empty:
+            return None
+
+        yearly_data = {}
+
+        for year in df['year'].unique():
+            year_df = df[df['year'] == year].copy()
+
+            if not year_df.empty:
+                yearly_data[str(year)] = {
+                    'data': year_df,
+                    'monthly_avg': year_df.groupby('month')['temperature_mean'].mean(),
+                    'summary': {
+                        'avg_temperature': year_df['temperature_mean'].mean(),
+                        'max_temperature': year_df['temperature_max'].max(),
+                        'min_temperature': year_df['temperature_min'].min(),
+                        'total_precipitation': year_df['precipitation'].sum(),
+                        'avg_humidity': year_df['humidity_mean'].mean(),
+                        'record_count': len(year_df)
+                    }
+                }
+
+        logger.info(f"Yearly trends analysis completed for {years} years")
+        return yearly_data
+
     def save_to_csv(self, df: pd.DataFrame, filename: str = None, output_dir: str = "csv_output") -> Optional[str]:
         """Salva DataFrame em CSV"""
 

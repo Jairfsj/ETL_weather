@@ -18,11 +18,39 @@ python serve_landing_page.py
 
 **Características da Landing Page:**
 - ✅ Design moderno e responsivo
+- ✅ **Suporte multilíngue** (🇺🇸 EN / 🇧🇷 PT / 🇫🇷 FR)
+- ✅ **Conversão de temperaturas** (Celsius ↔ Fahrenheit)
 - ✅ Dados climáticos simulados
 - ✅ Gráficos interativos (Chart.js)
 - ✅ Interface PowerBI-style
 - ✅ Funciona offline (dados demo)
 - ✅ Sem necessidade de configurar APIs
+
+---
+
+## 📅 Sistema de Monitoramento Contínuo (2024-2026)
+
+O ETL agora inclui **monitoramento climático contínuo de 2 anos** para Montreal:
+
+```bash
+# Iniciar monitoramento contínuo
+python continuous_monitoring.py
+
+# Para teste manual
+python continuous_monitoring.py --manual
+
+# Para testar APIs
+python continuous_monitoring.py --test
+```
+
+**Características do Monitoramento:**
+- 📊 **Período**: Janeiro 2024 → Dezembro 2026 (3 anos)
+- 📅 **Frequência**: 3 vezes por semana (Seg, Qua, Sex)
+- 🌤️ **APIs**: Open-Meteo (primária) + AerisWeather (backup)
+- 💾 **Armazenamento**: PostgreSQL + CSVs automáticos
+- 📋 **Relatórios**: Mensais e anuais automáticos
+- 🚨 **Alertas**: Condições climáticas extremas
+- 🌐 **Multilíngue**: Relatórios em EN/PT/FR
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://rust-lang.org)
@@ -190,6 +218,26 @@ curl "http://localhost:5000/api/v1/weather/openmeteo/historical/csv?start_date=2
 
 # Script Python completo incluído
 python open_meteo_example.py
+```
+
+### 📈 Monitoramento de Longo Prazo (2024-2026)
+
+```bash
+# Dados de monitoramento contínuo (2 anos)
+curl "http://localhost:5000/api/v1/weather/openmeteo/long-term?years=2"
+
+# Análise sazonal climática
+curl "http://localhost:5000/api/v1/weather/openmeteo/seasonal-analysis?years=2"
+
+# Tendências anuais de temperatura
+curl "http://localhost:5000/api/v1/weather/openmeteo/yearly-trends?years=2"
+
+# Status do sistema de monitoramento
+curl "http://localhost:5000/api/v1/weather/monitoring/status"
+
+# Script de monitoramento contínuo
+python continuous_monitoring.py --manual  # Coleta única
+python continuous_monitoring.py           # Monitoramento contínuo
 ```
 
 ### 📈 AerisWeather - Exemplos Complementares

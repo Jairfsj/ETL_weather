@@ -725,3 +725,162 @@ def generate_openmeteo_historical_csv():
         }), 500
 
 
+# Long-term monitoring endpoints (2024-2026)
+
+@weather_bp.route('/openmeteo/long-term')
+def get_openmeteo_long_term():
+    """Get long-term monitoring data (2024-2026)"""
+    try:
+        years = request.args.get('years', default=2, type=int)
+        years = min(max(years, 1), 3)  # Limit to 1-3 years
+
+        openmeteo_service = get_open_meteo_service()
+        df = openmeteo_service.get_long_term_monitoring_data(years)
+
+        if df is None or df.empty:
+            return jsonify({
+                'success': False,
+                'error': f'No long-term monitoring data found for {years} years'
+            }), 404
+
+        # Convert DataFrame to dict for JSON response
+        result = df.to_dict('records')
+
+        return jsonify({
+            'success': True,
+            'data': result,
+            'period': f'2024-{2024 + years - 1}',
+            'years': years,
+            'total_records': len(result),
+            'monitoring_frequency': '3 times per week (Mon, Wed, Fri)',
+            'source': 'Open-Meteo',
+            'note': 'Long-term climate monitoring data for Montreal'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching long-term monitoring data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/seasonal-analysis')
+def get_openmeteo_seasonal_analysis():
+    """Get seasonal analysis of climate data"""
+    try:
+        years = request.args.get('years', default=2, type=int)
+        years = min(max(years, 1), 3)  # Limit to 1-3 years
+
+        openmeteo_service = get_open_meteo_service()
+        seasonal_data = openmeteo_service.get_seasonal_analysis(years)
+
+        if seasonal_data is None or len(seasonal_data) == 0:
+            return jsonify({
+                'success': False,
+                'error': f'No seasonal analysis data available for {years} years'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'data': seasonal_data,
+            'period': f'2024-{2024 + years - 1}',
+            'years': years,
+            'seasons': list(seasonal_data.keys()),
+            'source': 'Open-Meteo',
+            'analysis_type': 'seasonal_climate_analysis'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching seasonal analysis: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/openmeteo/yearly-trends')
+def get_openmeteo_yearly_trends():
+    """Get yearly trends analysis"""
+    try:
+        years = request.args.get('years', default=2, type=int)
+        years = min(max(years, 1), 3)  # Limit to 1-3 years
+
+        openmeteo_service = get_open_meteo_service()
+        yearly_data = openmeteo_service.get_yearly_trends(years)
+
+        if yearly_data is None or len(yearly_data) == 0:
+            return jsonify({
+                'success': False,
+                'error': f'No yearly trends data available for {years} years'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'data': yearly_data,
+            'period': f'2024-{2024 + years - 1}',
+            'years': years,
+            'analyzed_years': list(yearly_data.keys()),
+            'source': 'Open-Meteo',
+            'analysis_type': 'yearly_climate_trends'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching yearly trends: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@weather_bp.route('/monitoring/status')
+def get_monitoring_status():
+    """Get current monitoring system status"""
+    try:
+        today = datetime.now().date()
+        current_year = today.year
+
+        # Calculate monitoring progress
+        total_years = 3  # 2024-2026
+        years_completed = current_year - 2024
+        progress_percentage = min(100, max(0, (years_completed / total_years) * 100))
+
+        # Check if today is a monitoring day
+        monitoring_days = [0, 2, 4]  # Mon, Wed, Fri
+        is_monitoring_day = today.weekday() in monitoring_days
+
+        # Get next monitoring date
+        next_monitoring = today
+        while next_monitoring.weekday() not in monitoring_days:
+            next_monitoring += timedelta(days=1)
+
+        status_info = {
+            'system_status': 'active',
+            'monitoring_period': '2024-2026',
+            'current_year': current_year,
+            'years_remaining': 2026 - current_year,
+            'progress_percentage': round(progress_percentage, 1),
+            'monitoring_frequency': '3 times per week',
+            'monitoring_days': ['Monday', 'Wednesday', 'Friday'],
+            'is_monitoring_day_today': is_monitoring_day,
+            'next_monitoring_date': next_monitoring.strftime('%Y-%m-%d'),
+            'data_sources': ['Open-Meteo (Primary)', 'AerisWeather (Backup)'],
+            'last_updated': datetime.now().isoformat(),
+            'reports_generated': 'Monthly and yearly climate reports',
+            'alerts_system': 'Extreme weather condition alerts'
+        }
+
+        return jsonify({
+            'success': True,
+            'status': status_info,
+            'message': f'Climate monitoring system active - {progress_percentage:.1f}% through the 2024-2026 period'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error getting monitoring status: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+

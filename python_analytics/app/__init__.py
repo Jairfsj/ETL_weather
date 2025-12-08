@@ -88,6 +88,10 @@ def create_app(config_class=None) -> Flask:
                 'openmeteo_historical': '/api/v1/weather/openmeteo/historical?start_date=2024-01-01&end_date=2024-01-31',
                 'openmeteo_monitoring': '/api/v1/weather/openmeteo/monitoring?weeks=4',
                 'openmeteo_csv': '/api/v1/weather/openmeteo/historical/csv?start_date=2024-01-01&end_date=2024-01-31',
+                'long_term_monitoring': '/api/v1/weather/openmeteo/long-term?years=2',
+                'seasonal_analysis': '/api/v1/weather/openmeteo/seasonal-analysis?years=2',
+                'yearly_trends': '/api/v1/weather/openmeteo/yearly-trends?years=2',
+                'monitoring_status': '/api/v1/weather/monitoring/status',
                 'dashboard': '/dashboard'
             }
         }
