@@ -18,6 +18,8 @@ jobs:
         POSTGRES_HOST=postgres
         POSTGRES_PORT=5432
         OPENWEATHER_API_KEY=demo_key
+        AERIS_CLIENT_ID=demo_client_id
+        AERIS_CLIENT_SECRET=demo_client_secret
         CITY=Montreal
         ETL_INTERVAL=300
         FLASK_HOST=0.0.0.0

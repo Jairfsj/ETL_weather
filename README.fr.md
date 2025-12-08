@@ -2,7 +2,7 @@
 
 > Système ETL professionnel complet pour la collecte, le traitement et la visualisation des données météorologiques de Montréal utilisant des technologies modernes comme Rust et Python.
 
-📖 **Lire dans d'autres langues** : [🇧🇷 Português](README.md) | [🇺🇸 English](README.en.md)
+📖 **Lire dans d'autres langues**: [🇧🇷 Português](README.md) | [🇺🇸 English](README.en.md)
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://rust-lang.org)
@@ -14,19 +14,20 @@
 
 ### 🔄 ETL en Temps Réel
 - **Collecte automatique** des données de l'API OpenWeatherMap toutes les 5 minutes
-- **Traitement robuste** avec gestion d'erreurs et récupération automatique
+- **Intégration AerisWeather** pour des données météorologiques complémentaires
+- **Traitement robuste** avec gestion des erreurs et récupération automatique
 - **Stockage fiable** dans PostgreSQL avec index optimisés
 
 ### 📊 Tableau de Bord Interactif
-- **Interface moderne et responsive** pour desktop et mobile
+- **Interface moderne** et responsive pour desktop et mobile
 - **Visualisations en temps réel** avec graphiques interactifs
 - **Métriques détaillées** de température, humidité, pression et vent
 - **Design intuitif** pour les utilisateurs non-techniques
 
 ### 🏗️ Architecture Professionnelle
-- **Microservices découplés** avec responsabilités claires
+- **Microservices** découplés avec responsabilités claires
 - **APIs RESTful** bien documentées
-- **Conteneurisation complète** avec Docker
+- **Containerisation complète** avec Docker
 - **Monitoring et health checks** intégrés
 
 ## 🚀 Démarrage Rapide
@@ -36,6 +37,7 @@
 - **Docker** (version 20.10+)
 - **Docker Compose** (version 2.0+)
 - **Compte gratuit** sur [OpenWeatherMap](https://openweathermap.org/)
+- **Compte gratuit** sur [AerisWeather](https://www.aerisweather.com/) (optionnel, pour données complémentaires)
 
 ### 1. Clonage et Configuration
 
@@ -48,51 +50,51 @@ cd montreal-weather-etl
 cp .env.example .env
 ```
 
-### 2. Configuration de l'API
+### 2. Configuração da API
 
-1. Accéder à [https://openweathermap.org/api](https://openweathermap.org/api)
-2. Créer un compte gratuit
-3. Aller dans votre tableau de bord → Clés API
-4. Copier votre clé d'API
-5. Modifier le fichier `.env` :
+1. Acesse [https://openweathermap.org/api](https://openweathermap.org/api)
+2. Crie uma conta gratuita
+3. Vá para seu dashboard → API Keys
+4. Copie sua chave da API
+5. Edite o arquivo `.env`:
 
 ```bash
-# Remplacer 'your_api_key_here' par votre vraie clé
+# Substitua 'your_api_key_here' pela sua chave real
 OPENWEATHER_API_KEY=your_actual_api_key_here
 ```
 
-### 3. Exécution
+### 3. Execução
 
 ```bash
-# Construire et démarrer tous les services
+# Construir e iniciar todos os serviços
 docker compose up --build -d
 
-# Vérifier le statut des conteneurs
+# Verificar status dos containers
 docker compose ps
 
-# Voir les logs en temps réel
+# Ver logs em tempo real
 docker compose logs -f
 ```
 
-### 4. Accès
+### 4. Acesso
 
-- **🌐 Tableau de Bord Web** : http://localhost:5000/dashboard
-- **📡 API REST** : http://localhost:5000/api/v1/weather/health
-- **🐘 PostgreSQL** : localhost:5432 (dans les conteneurs)
+- **🌐 Dashboard Web**: http://localhost:5000/dashboard
+- **📡 API REST**: http://localhost:5000/api/v1/weather/health
+- **🐘 PostgreSQL**: localhost:5432 (dentro dos containers)
 
-## 📋 Référence API
+## 📋 API Reference
 
-### Points de Terminaison Principaux
+### Endpoints Principais
 
-| Méthode | Point de terminaison | Description |
-|---------|---------------------|-------------|
-| `GET` | `/api/v1/weather/health` | Vérification de santé du système |
-| `GET` | `/api/v1/weather/current` | Conditions météorologiques actuelles |
-| `GET` | `/api/v1/weather/latest?limit=N` | Derniers N enregistrements |
-| `GET` | `/api/v1/weather/stats` | Statistiques météorologiques |
-| `GET` | `/api/v1/weather/chart-data?hours=N` | Données pour graphiques |
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/weather/health` | Health check do sistema |
+| `GET` | `/api/v1/weather/current` | Condições climáticas atuais |
+| `GET` | `/api/v1/weather/latest?limit=N` | Últimos N registros |
+| `GET` | `/api/v1/weather/stats` | Estatísticas do clima |
+| `GET` | `/api/v1/weather/chart-data?hours=N` | Dados para gráficos |
 
-### Exemple de Réponse - Conditions Actuelles
+### Exemplo de Resposta - Condições Atuais
 
 ```json
 {
@@ -115,185 +117,185 @@ docker compose logs -f
 }
 ```
 
-## 🏛️ Architecture du Système
+## 🏛️ Arquitetura do Sistema
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   OpenWeather   │ => │   Service ETL   │ => │  Base de        │
-│   API (REST)    │    │   Rust          │    │  Données        │
-└─────────────────┘    └─────────────────┘    │  PostgreSQL     │
-                                              └─────────────────┘
+│   OpenWeather   │ => │   Rust ETL      │ => │  PostgreSQL     │
+│   API (REST)    │    │   Service       │    │  Database       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
                               │                        │
                               ▼                        ▼
                        ┌─────────────────┐    ┌─────────────────┐
-                       │  Python Flask   │ <= │   Tableau de    │
-                       │   API REST      │    │   Bord Web      │
-                       └─────────────────┘    │   (HTML/CSS/JS) │
-                                              └─────────────────┘
+                       │  Python Flask   │ <= │   Web Dashboard │
+                       │   REST API      │    │   (HTML/CSS/JS) │
+                       └─────────────────┘    └─────────────────┘
 ```
 
-### Composants
+### Componentes
 
-#### 1. **Service ETL Rust** (`rust_etl/`)
-- **Responsabilités** : Collecte, traitement et stockage des données
-- **Technologies** : Rust, Tokio, Reqwest, SQLx
-- **Caractéristiques** : Haute performance, faible consommation mémoire
+#### 1. **Rust ETL Service** (`rust_etl/`)
+- **Responsabilidades**: Coleta, processamento e armazenamento de dados
+- **Tecnologias**: Rust, Tokio, Reqwest, SQLx
+- **Características**: Alta performance, baixo consumo de memória
 
-#### 2. **API Analytics Python** (`python_analytics/`)
-- **Responsabilités** : API REST, tableau de bord web, analytics
-- **Technologies** : Python, Flask, Pandas, Plotly
-- **Caractéristiques** : Interface web moderne, APIs RESTful
+#### 2. **Python Analytics API** (`python_analytics/`)
+- **Responsabilidades**: API REST, dashboard web, analytics
+- **Tecnologias**: Python, Flask, Pandas, Plotly
+- **Características**: Interface web moderna, APIs RESTful
 
-#### 3. **Base de Données PostgreSQL**
-- **Responsabilités** : Stockage persistant des données
-- **Caractéristiques** : Index optimisés, contraintes d'intégrité
+#### 3. **PostgreSQL Database**
+- **Responsabilidades**: Armazenamento persistente de dados
+- **Características**: Índices otimizados, constraints de integridade
 
-## ⚙️ Configuration Avancée
+## ⚙️ Configuração Avançada
 
-### Variables d'Environnement
+### Variáveis de Ambiente
 
-| Variable | Défaut | Description |
-|----------|--------|-------------|
-| `OPENWEATHER_API_KEY` | - | **Obligatoire** - Clé API OpenWeatherMap |
-| `CITY` | Montreal | Ville pour la collecte de données |
-| `ETL_INTERVAL` | 300 | Intervalle de collecte en secondes |
-| `POSTGRES_USER` | etl_user | Utilisateur de la base de données |
-| `POSTGRES_PASSWORD` | supersecret | Mot de passe de la base de données |
-| `POSTGRES_DB` | weather_db | Nom de la base de données |
-| `FLASK_PORT` | 5000 | Port du serveur Flask |
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `OPENWEATHER_API_KEY` | - | **Obrigatória** - Chave da API OpenWeatherMap |
+| `AERIS_CLIENT_ID` | - | **Opcional** - ID do cliente AerisWeather |
+| `AERIS_CLIENT_SECRET` | - | **Opcional** - Segredo do cliente AerisWeather |
+| `CITY` | Montreal | Cidade para coleta de dados |
+| `ETL_INTERVAL` | 300 | Intervalo de coleta em segundos |
+| `POSTGRES_USER` | etl_user | Usuário do banco de dados |
+| `POSTGRES_PASSWORD` | supersecret | Senha do banco de dados |
+| `POSTGRES_DB` | weather_db | Nome do banco de dados |
+| `FLASK_PORT` | 5000 | Porta do servidor Flask |
 
-### Modes d'Exécution
+### Modos de Execução
 
-#### Développement
+#### Desenvolvimento
 ```bash
-# Environnement de développement complet
+# Ambiente completo de desenvolvimento
 docker compose up --build
 
-# Services spécifiques uniquement
+# Apenas serviços específicos
 docker compose up postgres python_analytics
 ```
 
-#### Production
+#### Produção
 ```bash
-# Utiliser la configuration de production
+# Usar configuração de produção
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-## 🛠️ Développement
+## 🔧 Desenvolvimento
 
-### Structure du Projet
+### Estrutura do Projeto
 
 ```
 montreal-weather-etl/
-├── docker-compose.yml          # Configuration de développement
-├── docker-compose.prod.yml     # Configuration de production
-├── .env.example               # Exemple de variables d'environnement
+├── docker-compose.yml          # Configuração de desenvolvimento
+├── docker-compose.prod.yml     # Configuração de produção
+├── .env.example               # Exemplo de variáveis de ambiente
 ├── postgres/
-│   └── init.sql              # Schéma initial de la base
+│   └── init.sql              # Schema inicial do banco
 ├── rust_etl/
-│   ├── Cargo.toml            # Dépendances Rust
-│   ├── Dockerfile            # Conteneur Rust
+│   ├── Cargo.toml            # Dependências Rust
+│   ├── Dockerfile            # Container Rust
 │   └── src/
-│       ├── lib.rs           # Bibliothèque partagée
-│       ├── main.rs          # Point d'entrée
-│       ├── models/          # Modèles de données
-│       ├── services/        # Logique métier
-│       ├── config/          # Configuration
-│       └── utils/           # Utilitaires
+│       ├── lib.rs           # Biblioteca compartilhada
+│       ├── main.rs          # Ponto de entrada
+│       ├── models/          # Modelos de dados
+│       ├── services/        # Lógica de negócio
+│       ├── config/          # Configuração
+│       └── utils/           # Utilitários
 └── python_analytics/
-    ├── requirements.txt      # Dépendances Python
-    ├── Dockerfile           # Conteneur Python
+    ├── requirements.txt      # Dependências Python
+    ├── Dockerfile           # Container Python
     └── app/
-        ├── __init__.py      # Application Flask
-        ├── models/          # Modèles Python
-        ├── services/        # Services Python
-        ├── api/             # Points de terminaison REST
-        ├── utils/           # Utilitaires
+        ├── __init__.py      # Aplicação Flask
+        ├── models/          # Modelos Python
+        ├── services/        # Serviços Python
+        ├── api/             # Endpoints REST
+        ├── utils/           # Utilitários
         └── templates/       # Templates HTML
 ```
 
-### Commandes Utiles
+### Comandos Úteis
 
 ```bash
-# Nettoyer conteneurs et volumes
+# Limpar containers e volumes
 docker compose down -v
 
-# Reconstruire service spécifique
+# Reconstruir apenas um serviço
 docker compose build rust_etl
 
-# Exécuter tests (quand implémentés)
+# Executar testes (quando implementados)
 docker compose exec rust_etl cargo test
 
-# Voir statistiques des conteneurs
+# Ver estatísticas dos containers
 docker stats
 
-# Sauvegarde de la base de données
+# Backup do banco de dados
 docker compose exec postgres pg_dump -U etl_user weather_db > backup.sql
 ```
 
-## 📊 Monitoring
+## 📊 Monitoramento
 
 ### Health Checks
-- **PostgreSQL** : Vérification de connectivité
-- **API Python** : Point de terminaison `/api/v1/weather/health`
-- **ETL Rust** : Monitoring automatique des processus
+- **PostgreSQL**: Verificação de conectividade
+- **Python API**: Endpoint `/api/v1/weather/health`
+- **Rust ETL**: Monitoramento automático de processos
 
 ### Logs
 ```bash
-# Tous les logs
+# Todos os logs
 docker compose logs -f
 
-# Logs d'un service spécifique
+# Logs de um serviço específico
 docker compose logs -f python_analytics
 
-# Logs avec timestamps
+# Logs com timestamps
 docker compose logs --timestamps
 ```
 
-### Métriques
-- Nombre total d'enregistrements collectés
-- Taux de succès des collectes
-- Temps de réponse de l'API
-- Statut des services
+### Métricas
+- Número total de registros coletados
+- Taxa de sucesso das coletas
+- Tempo de resposta da API
+- Status dos serviços
 
-## 🔒 Sécurité
+## 🔒 Segurança
 
-- ✅ **Clés API** stockées dans les variables d'environnement
-- ✅ **Conteneurs non-privilégiés** (`no-new-privileges`)
-- ✅ **Système de fichiers en lecture seule** où possible
-- ✅ **Réseaux isolés** entre conteneurs
-- ✅ **Health checks** automatisés
-- ✅ **Logs structurés** avec rotation
+- ✅ **Chaves de API** armazenadas em variáveis de ambiente
+- ✅ **Containers não-privilegiados** (`no-new-privileges`)
+- ✅ **File system read-only** onde possível
+- ✅ **Redes isoladas** entre containers
+- ✅ **Health checks** automatizados
+- ✅ **Logs estruturados** com rotação
 
-## 🧪 Tests
+## 🧪 Testes
 
 ```bash
-# Tests Rust
+# Testes Rust
 cd rust_etl && cargo test
 
-# Tests Python (quand implémentés)
+# Testes Python (quando implementados)
 cd python_analytics && python -m pytest
 
-# Tests d'intégration
+# Testes de integração
 docker compose -f docker-compose.test.yml up --abort-on-container-exit
 ```
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
-### Production
+### Produção
 
-1. **Configurer les variables d'environnement** :
+1. **Configure as variáveis de ambiente**:
    ```bash
    cp .env.example .env
-   # Modifier .env avec les valeurs de production
+   # Edite .env com valores de produção
    ```
 
-2. **Exécuter en mode production** :
+2. **Execute em modo produção**:
    ```bash
    docker compose -f docker-compose.prod.yml up --build -d
    ```
 
-3. **Configurer proxy inverse** (nginx recommandé) :
+3. **Configure reverse proxy** (nginx recomendado):
    ```nginx
    server {
        listen 80;
@@ -307,48 +309,49 @@ docker compose -f docker-compose.test.yml up --abort-on-container-exit
    }
    ```
 
-### Évolutivité
+### Escalabilidade
 
-- **Service ETL** : Stateless, peut être mis à l'échelle horizontalement
-- **Service API** : Stateless, peut utiliser load balancer
-- **Base de données** : Utiliser des répliques de lecture si nécessaire
+- **ETL Service**: Stateless, pode ser escalado horizontalmente
+- **API Service**: Stateless, pode usar load balancer
+- **Database**: Use réplicas para leitura se necessário
 
-## 🤝 Contribution
+## 🤝 Contribuição
 
-1. **Fork** le projet
-2. **Clone** votre fork : `git clone https://github.com/your-username/montreal-weather-etl`
-3. **Créer** une branche : `git checkout -b feature/AmazingFeature`
-4. **Commit** vos changements : `git commit -m 'Add some AmazingFeature'`
-5. **Push** vers la branche : `git push origin feature/AmazingFeature`
-6. **Ouvrir** une Pull Request
+1. **Fork** o projeto
+2. **Clone** sua fork: `git clone https://github.com/your-username/montreal-weather-etl`
+3. **Crie** uma branch: `git checkout -b feature/AmazingFeature`
+4. **Commit** suas mudanças: `git commit -m 'Add some AmazingFeature'`
+5. **Push** para a branch: `git push origin feature/AmazingFeature`
+6. **Abra** um Pull Request
 
-### Directives de Contribution
+### Diretrizes de Contribuição
 
-- Suivre les standards de code (Rust : `cargo fmt`, Python : `black`)
-- Ajouter des tests pour les nouvelles fonctionnalités
-- Mettre à jour la documentation
-- Utiliser des commits descriptifs
+- Siga os padrões de código (Rust: `cargo fmt`, Python: `black`)
+- Adicione testes para novas funcionalidades
+- Atualize a documentação
+- Use commits descritivos
 
-## 📝 Licence
+## 📝 Licença
 
-Ce projet est sous licence **MIT License** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## 🙏 Remerciements
+## 🙏 Agradecimentos
 
-- [OpenWeatherMap](https://openweathermap.org/) - API de données météorologiques
-- [Rust Language](https://rust-lang.org/) - Langage de programmation
-- [Python](https://python.org/) - Écosystème de développement
-- [PostgreSQL](https://postgresql.org/) - Base de données robuste
-- [Docker](https://docker.com/) - Conteneurisation
+- [OpenWeatherMap](https://openweathermap.org/) - API de dados climáticos
+- [AerisWeather](https://www.aerisweather.com/) - API de dados climáticos complementares
+- [Rust Language](https://rust-lang.org/) - Linguagem de programação
+- [Python](https://python.org/) - Ecossistema de desenvolvimento
+- [PostgreSQL](https://postgresql.org/) - Banco de dados robusto
+- [Docker](https://docker.com/) - Containerização
 
-## 📞 Support
+## 📞 Suporte
 
-Pour le support technique ou les questions :
+Para suporte técnico ou dúvidas:
 
-1. Vérifier les [logs des conteneurs](#logs)
-2. Consulter la [documentation API](#api-reference)
-3. Ouvrir une [issue](https://github.com/your-username/montreal-weather-etl/issues) sur GitHub
+1. Verifique os [logs dos containers](#logs)
+2. Consulte a [documentação da API](#api-reference)
+3. Abra uma [issue](https://github.com/your-username/montreal-weather-etl/issues) no GitHub
 
 ---
 
-**⭐ Si ce projet vous a été utile, considérez de lui donner une étoile sur GitHub !**
+**⭐ Se este projeto foi útil para você, considere dar uma estrela no GitHub!**
