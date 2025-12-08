@@ -4,6 +4,26 @@
 
 📖 **Leia em outros idiomas**: [🇺🇸 English](README.en.md) | [🇫🇷 Français](README.fr.md)
 
+## 🚀 Acesso Rápido - Landing Page
+
+Para visualizar os dados **sem configurar todo o sistema**, use nossa landing page standalone:
+
+```bash
+# Iniciar servidor da landing page
+python serve_landing_page.py
+
+# Acessar no navegador
+# http://localhost:8080
+```
+
+**Características da Landing Page:**
+- ✅ Design moderno e responsivo
+- ✅ Dados climáticos simulados
+- ✅ Gráficos interativos (Chart.js)
+- ✅ Interface PowerBI-style
+- ✅ Funciona offline (dados demo)
+- ✅ Sem necessidade de configurar APIs
+
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://rust-lang.org)
 [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://python.org)

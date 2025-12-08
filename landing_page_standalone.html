@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌤️ Clima Montreal - Monitoramento em Tempo Real</title>
+
+    <!-- Meta Tags para SEO -->
+    <meta name="description" content="Monitore o clima de Montreal em tempo real com dados precisos e visualizações interativas. Temperatura, umidade, vento e previsões atualizadas.">
+    <meta name="keywords" content="clima Montreal, tempo real, meteorologia, Canadá, Quebec, temperatura">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+
+    <style>
+        /* CSS Variables para design system moderno */
+        :root {
+            /* Cores principais */
+            --primary-50: #f0f9ff;
+            --primary-100: #e0f2fe;
+            --primary-200: #bae6fd;
+            --primary-300: #7dd3fc;
+            --primary-400: #38bdf8;
+            --primary-500: #0ea5e9;
+            --primary-600: #0284c7;
+            --primary-700: #0369a1;
+            --primary-800: #075985;
+            --primary-900: #0c4a6e;
+
+            /* Cores de estado */
+            --success-50: #f0fdf4;
+            --success-500: #22c55e;
+            --warning-50: #fffbeb;
+            --warning-500: #f59e0b;
+            --error-50: #fef2f2;
+            --error-500: #ef4444;
+
+            /* Neutras */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+
+            /* Sombras */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+            /* Bordas */
+            --border-radius-sm: 0.25rem;
+            --border-radius: 0.375rem;
+            --border-radius-md: 0.5rem;
+            --border-radius-lg: 0.75rem;
+            --border-radius-xl: 1rem;
+            --border-radius-2xl: 1.5rem;
+
+            /* Transições */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Reset e Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 4rem 0 2rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .subtitle {
+            font-size: 1.25rem;
+            font-weight: 400;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-xl);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-500);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.error {
+            background: var(--error-500);
+        }
+
+        .status-dot.warning {
+            background: var(--warning-500);
+        }
+
+        /* Grid principal */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        @media (min-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-2xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all var(--transition-normal);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0.25rem 0 0 0;
+        }
+
+        /* Current Weather Card */
+        .current-weather {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .current-weather::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-500), var(--success-500), var(--warning-500));
+        }
+
+        .weather-main {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .temperature {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feels-like {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .weather-description {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .location {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--gray-200);
+        }
+
+        .detail-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: var(--gray-50);
+            border-radius: var(--border-radius-lg);
+            border: 2px dashed var(--gray-300);
+            color: var(--gray-500);
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        /* Forecast Cards */
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .forecast-card {
+            text-align: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--gray-200);
+            transition: all var(--transition-fast);
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            background: white;
+        }
+
+        .forecast-date {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .forecast-temp {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .forecast-desc {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--gray-500);
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--gray-300);
+            border-top: 3px solid var(--primary-500);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        /* Error States */
+        .error {
+            text-align: center;
+            padding: 3rem;
+            color: var(--error-600);
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 0 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer p {
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            font-size: 0.75rem;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        .footer-link:hover {
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Utility Classes */
+        .fade-in {
+            animation: fadeIn var(--transition-slow) ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn var(--transition-normal) ease-out;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header .subtitle {
+                font-size: 1.125rem;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .temperature {
+                font-size: 3rem;
+            }
+
+            .forecast-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 2rem 0 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .forecast-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .weather-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --gray-50: #1f2937;
+                --gray-100: #374151;
+                --gray-200: #4b5563;
+                --gray-800: #f9fafb;
+                --gray-900: #ffffff;
+            }
+
+            body {
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            }
+        }
+
+        /* Demo data button */
+        .demo-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+            text-decoration: none;
+            border-radius: var(--border-radius-lg);
+            font-weight: 600;
+            transition: all var(--transition-fast);
+            margin: 1rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="fade-in">🌤️ Clima Montreal</h1>
+            <p class="subtitle fade-in">
+                Monitoramento climático em tempo real da cidade de Montreal, Quebec.
+                Dados precisos e visualizações interativas para acompanhar as condições meteorológicas atuais.
+            </p>
+
+            <div class="status-bar fade-in">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Sistema Online</span>
+                </div>
+                <div class="status-item">
+                    <span id="last-update">Demonstração - Dados Simulados</span>
+                </div>
+            </div>
+
+            <button class="demo-btn" onclick="loadDemoData()">🔄 Carregar Dados de Demonstração</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="main-grid">
+            <!-- Current Weather -->
+            <section class="card current-weather fade-in" id="current-weather-card">
+                <div class="card-header">
+                    <div class="card-icon">🌡️</div>
+                    <div>
+                        <h2 class="card-title">Condições Atuais</h2>
+                        <p class="card-subtitle">Dados climáticos atuais de Montreal</p>
+                    </div>
+                </div>
+
+                <div id="current-weather-content">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <span>Clique em "Carregar Dados de Demonstração"</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Forecast -->
+            <section class="card fade-in" id="forecast-card">
+                <div class="card-header">
+                    <div class="card-icon">📅</div>
+                    <div>
+                        <h2 class="card-title">Previsão</h2>
+                        <p class="card-subtitle">Próximos 7 dias</p>
+                    </div>
+                </div>
+
+                <div id="forecast-content">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <span>Aguardando dados...</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Charts Section -->
+        <section class="card fade-in" id="charts-card">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div>
+                    <h2 class="card-title">Análise Climática</h2>
+                    <p class="card-subtitle">Tendências e padrões meteorológicos</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-placeholder" id="chart-placeholder">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📈</div>
+                        <div>Gráfico será carregado após os dados</div>
+                    </div>
+                </div>
+                <canvas id="weatherChart" style="display: none;"></canvas>
+            </div>
+        </section>
+
+        <!-- Additional Info Cards -->
+        <div class="main-grid">
+            <section class="card fade-in">
+                <div class="card-header">
+                    <div class="card-icon">ℹ️</div>
+                    <div>
+                        <h2 class="card-title">Sobre Montreal</h2>
+                        <p class="card-subtitle">Dados da cidade</p>
+                    </div>
+                </div>
+
+                <div style="line-height: 1.7;">
+                    <p><strong>Localização:</strong> Montreal, Quebec, Canadá</p>
+                    <p><strong>Coordenadas:</strong> 45.5019° N, 73.5673° W</p>
+                    <p><strong>Fuso horário:</strong> Eastern Time (ET)</p>
+                    <p><strong>Altitude:</strong> 233 metros acima do nível do mar</p>
+                    <p><strong>População:</strong> ~4.3 milhões (aglomeração urbana)</p>
+                </div>
+            </section>
+
+            <section class="card fade-in">
+                <div class="card-header">
+                    <div class="card-icon">🕒</div>
+                    <div>
+                        <h2 class="card-title">Fonte de Dados</h2>
+                        <p class="card-subtitle">APIs utilizadas</p>
+                    </div>
+                </div>
+
+                <div style="line-height: 1.7;">
+                    <p><strong>Dados atuais:</strong> Open-Meteo (gratuito, sem API key)</p>
+                    <p><strong>Previsão:</strong> Open-Meteo (7-16 dias)</p>
+                    <p><strong>Dados históricos:</strong> Open-Meteo (até 60 anos)</p>
+                    <p><strong>Monitoramento:</strong> 3-4 vezes por semana</p>
+                    <p><strong>Precisão:</strong> Dados meteorológicos oficiais</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>
+                    <strong>Demonstração:</strong> Esta página usa dados simulados para fins de demonstração.
+                    Para dados reais, conecte-se ao servidor ETL completo.
+                </p>
+                <div class="footer-links">
+                    <a href="https://open-meteo.com/" class="footer-link" target="_blank">Open-Meteo API</a>
+                    <a href="https://weather.gc.ca/" class="footer-link" target="_blank">Environment Canada</a>
+                    <a href="https://github.com/seu-repo" class="footer-link" target="_blank">Código Fonte</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Global variables
+        let weatherChart = null;
+
+        // Demo data
+        const demoWeather = {
+            location: "Montreal, CA",
+            temperature: 18.5,
+            feels_like: 17.2,
+            humidity: 72,
+            wind_speed: 12.3,
+            pressure: 1012,
+            weather_main: "Parcialmente Nublado",
+            timestamp: new Date().toISOString()
+        };
+
+        const demoForecast = [
+            { date: "2024-01-15", temperature_max: 19, temperature_min: 12, precipitation: 0 },
+            { date: "2024-01-16", temperature_max: 17, temperature_min: 10, precipitation: 2 },
+            { date: "2024-01-17", temperature_max: 15, temperature_min: 8, precipitation: 0 },
+            { date: "2024-01-18", temperature_max: 16, temperature_min: 9, precipitation: 1 },
+            { date: "2024-01-19", temperature_max: 18, temperature_min: 11, precipitation: 0 },
+            { date: "2024-01-20", temperature_max: 20, temperature_min: 13, precipitation: 0 },
+            { date: "2024-01-21", temperature_max: 22, temperature_min: 15, precipitation: 3 }
+        ];
+
+        const demoMonitoring = {
+            data: [
+                { date: "2024-01-08", temperature_mean: 16.2, humidity_mean: 68 },
+                { date: "2024-01-10", temperature_mean: 17.8, humidity_mean: 71 },
+                { date: "2024-01-12", temperature_mean: 18.5, humidity_mean: 69 },
+                { date: "2024-01-15", temperature_mean: 19.2, humidity_mean: 72 },
+                { date: "2024-01-17", temperature_mean: 17.9, humidity_mean: 70 },
+                { date: "2024-01-19", temperature_mean: 18.1, humidity_mean: 68 },
+                { date: "2024-01-21", temperature_mean: 18.5, humidity_mean: 72 }
+            ],
+            summary: {
+                period_weeks: 3,
+                total_records: 7,
+                temperature: { min: 16.2, max: 19.2, mean: 18.0 },
+                precipitation: { total: 6, days_with_rain: 2 },
+                source: "Open-Meteo Demo"
+            }
+        };
+
+        // Load demo data
+        function loadDemoData() {
+            displayCurrentWeather(demoWeather);
+            displayForecast(demoForecast);
+            displayChart(demoMonitoring.data, demoMonitoring.summary);
+            updateLastUpdate();
+        }
+
+        // Display current weather data
+        function displayCurrentWeather(weather) {
+            const content = document.getElementById('current-weather-content');
+
+            content.innerHTML = `
+                <div class="weather-main">
+                    <div class="temperature">${weather.temperature}°C</div>
+                    <div class="feels-like">Sensação térmica: ${weather.feels_like}°C</div>
+                    <div class="weather-description">${weather.weather_main}</div>
+                    <div class="location">${weather.location}</div>
+                </div>
+
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <div class="detail-value">${weather.wind_speed} km/h</div>
+                        <div class="detail-label">Vento</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">${weather.humidity}%</div>
+                        <div class="detail-label">Umidade</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">${weather.pressure} hPa</div>
+                        <div class="detail-label">Pressão</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">--°C</div>
+                        <div class="detail-label">Ponto de Orvalho</div>
+                    </div>
+                </div>
+            `;
+
+            content.classList.add('fade-in');
+        }
+
+        // Display forecast data
+        function displayForecast(forecast) {
+            const content = document.getElementById('forecast-content');
+
+            const forecastHtml = forecast.map(day => {
+                const date = new Date(day.date);
+                const dayName = date.toLocaleDateString('pt-BR', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                return `
+                    <div class="forecast-card">
+                        <div class="forecast-date">${dayName}</div>
+                        <div class="forecast-temp">
+                            <span style="color: #ef4444;">${day.temperature_max}°</span>
+                            <span style="color: #6b7280; margin: 0 0.25rem;">/</span>
+                            <span style="color: #3b82f6;">${day.temperature_min}°</span>
+                        </div>
+                        <div class="forecast-desc">${day.precipitation > 0 ? `${day.precipitation}mm` : 'Seco'}</div>
+                    </div>
+                `;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="forecast-grid">
+                    ${forecastHtml}
+                </div>
+            `;
+
+            content.classList.add('fade-in');
+        }
+
+        // Display chart
+        function displayChart(monitoringData, summary) {
+            const placeholder = document.getElementById('chart-placeholder');
+            const canvas = document.getElementById('weatherChart');
+
+            placeholder.style.display = 'none';
+            canvas.style.display = 'block';
+
+            // Prepare data for chart
+            const labels = monitoringData.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('pt-BR', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+            });
+
+            const temperatureData = monitoringData.map(d => d.temperature_mean);
+            const humidityData = monitoringData.map(d => d.humidity_mean);
+
+            // Create chart
+            const ctx = canvas.getContext('2d');
+
+            if (weatherChart) {
+                weatherChart.destroy();
+            }
+
+            weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: temperatureData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Umidade (%)',
+                            data: humidityData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monitoramento Climático - 3 Semanas',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Data'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperatura (°C)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Umidade (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 8
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+
+            canvas.classList.add('slide-in');
+        }
+
+        // Update last update time
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleString('pt-BR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('last-update').textContent = `Última atualização: ${timeString}`;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.add('fade-in');
+            });
+
+            // Auto-load demo data after 2 seconds
+            setTimeout(() => {
+                loadDemoData();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
