@@ -1,7 +1,8 @@
 import logging
 from flask import Blueprint, jsonify, request, current_app
 from typing import Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
+import pandas as pd
 from ..services.database_service import DatabaseService
 from ..services.alert_service import AlertService
 from ..services.aeris_weather_service import AerisWeatherService
@@ -885,113 +886,6 @@ def get_monitoring_status():
         }), 500
 
 
-
-# WeatherAPI Endpoints (Real-time data - Free tier: 1M calls/month)
-
-def get_weatherapi_service() -> WeatherAPIService:
-    """Get WeatherAPI service from app context"""
-    if 'weatherapi_service' not in current_app.config:
-        current_app.config['weatherapi_service'] = WeatherAPIService()
-    return current_app.config['weatherapi_service']
-
-
-@weather_bp.route('/weatherapi/current')
-def get_weatherapi_current():
-    """Get current weather from WeatherAPI (real-time)"""
-    try:
-        weatherapi_service = get_weatherapi_service()
-        data = weatherapi_service.get_current_weather()
-
-        if data:
-            return jsonify({
-                'success': True,
-                'data': data,
-                'source': 'WeatherAPI',
-                'location': 'Montreal, Canada',
-                'timestamp': datetime.now().isoformat(),
-                'free_tier': '1,000,000 calls/month',
-                'update_frequency': '15 minutes'
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Unable to fetch current weather data from WeatherAPI'
-            }), 503
-
-    except Exception as e:
-        logger.error(f"Error fetching WeatherAPI current weather: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-
-@weather_bp.route('/weatherapi/forecast')
-def get_weatherapi_forecast():
-    """Get forecast from WeatherAPI"""
-    try:
-        days = request.args.get('days', default=7, type=int)
-        days = min(max(days, 1), 10)  # WeatherAPI supports up to 10 days
-
-        weatherapi_service = get_weatherapi_service()
-        data = weatherapi_service.get_forecast_weather(days)
-
-        if data:
-            return jsonify({
-                'success': True,
-                'data': data,
-                'days': len(data),
-                'source': 'WeatherAPI',
-                'location': 'Montreal, Canada',
-                'timestamp': datetime.now().isoformat()
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Unable to fetch forecast data from WeatherAPI'
-            }), 503
-
-    except Exception as e:
-        logger.error(f"Error fetching WeatherAPI forecast: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-
-@weather_bp.route('/weatherapi/realtime')
-def get_weatherapi_realtime():
-    """Get complete real-time monitoring data from WeatherAPI"""
-    try:
-        weatherapi_service = get_weatherapi_service()
-        data = weatherapi_service.get_realtime_monitoring_data()
-
-        if data:
-            return jsonify({
-                'success': True,
-                'data': data,
-                'source': 'WeatherAPI',
-                'monitoring_period': '2025-12-07 to 2027-01-01',
-                'free_tier_limit': '1,000,000 calls/month',
-                'update_frequency': '15 minutes'
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Unable to fetch real-time monitoring data from WeatherAPI'
-            }), 503
-
-    except Exception as e:
-        logger.error(f"Error fetching WeatherAPI real-time data: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@weather_bp.route('/test')
-@weather_bp.route('/test')
-def test_endpoint():
-    return jsonify({'message': 'Test working', 'time': datetime.now().isoformat()}), 200
 
 # WeatherAPI Endpoints (Real-time data - Free tier: 1M calls/month)
 
