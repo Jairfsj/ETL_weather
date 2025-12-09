@@ -158,12 +158,14 @@ def main():
         print(f"   Total de registros: {summary['total_records']}")
         print(f"   Agendamento: {result['monitoring_schedule']}")
 
-        print("   📊 Estatísticas de Temperatura:"        print(f"      Máxima: {summary['temperature']['max']}°C")
+        print("   📊 Estatísticas de Temperatura:")
+        print(f"      Máxima: {summary['temperature']['max']}°C")
         print(f"      Mínima: {summary['temperature']['min']}°C")
         print(f"      Média: {summary['temperature']['mean']:.1f}°C")
         print(f"      Desvio padrão: {summary['temperature']['std']:.1f}°C")
 
-        print("   🌧️ Estatísticas de Precipitação:"        print(f"      Total: {summary['precipitation']['total']:.1f} mm")
+        print("   🌧️ Estatísticas de Precipitação:")
+        print(f"      Total: {summary['precipitation']['total']:.1f} mm")
         print(f"      Dias com chuva: {summary['precipitation']['days_with_rain']}")
         print(f"      Média diária: {summary['precipitation']['mean_daily']:.1f} mm")
 
@@ -198,7 +200,8 @@ def main():
             # Mostra estatísticas básicas
             temps = [d.get('temperature_mean', 0) for d in data if d.get('temperature_mean')]
             if temps:
-                print("   📊 Estatísticas do período:"                print(f"      Temperatura média: {sum(temps)/len(temps):.1f}°C")
+                print("   📊 Estatísticas do período:")
+                print(f"      Temperatura média: {sum(temps)/len(temps):.1f}°C")
                 print(f"      Temperatura máxima: {max(temps):.1f}°C")
                 print(f"      Temperatura mínima: {min(temps):.1f}°C")
     else:
