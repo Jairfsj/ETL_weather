@@ -1,6 +1,7 @@
 import logging
 import os
-from flask import Flask, render_template
+import time
+from flask import Flask, render_template, g
 from flask_cors import CORS
 
 from .api.weather_api import weather_bp
@@ -43,8 +44,19 @@ def create_app(config_class=None) -> Flask:
     app.config['TELEGRAM_TOKEN'] = config_class.TELEGRAM_TOKEN
     app.config['TELEGRAM_CHAT_ID'] = config_class.TELEGRAM_CHAT_ID
 
-    # Initialize extensions
-    CORS(app)
+    # Initialize extensions with secure CORS configuration
+    CORS(app,
+         origins=[
+             "http://localhost:5000",
+             "http://127.0.0.1:5000",
+             "http://localhost:8080",
+             "http://127.0.0.1:8080"
+         ],
+         methods=["GET", "POST", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization"],
+         supports_credentials=False,
+         max_age=86400  # 24 hours
+    )
 
     # Initialize services
     db_service = DatabaseService(app.config['DATABASE_URL'])
@@ -62,6 +74,46 @@ def create_app(config_class=None) -> Flask:
 
     # Register blueprints
     app.register_blueprint(weather_bp, url_prefix='/api/v1/weather')
+
+    # Security middleware - request logging
+    @app.before_request
+    def log_request_info():
+        """Log security-relevant request information"""
+        client_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'unknown')
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        method = request.method
+        path = request.path
+        query_string = request.query_string.decode('utf-8') if request.query_string else ''
+
+        # Log security events
+        if method in ['POST', 'PUT', 'DELETE', 'PATCH']:
+            logger.warning(f"SECURITY: {method} request to {path} from {client_ip}")
+
+        # Log all API requests for monitoring
+        if path.startswith('/api/'):
+            logger.info(f"API_REQUEST: {method} {path} from {client_ip} - UA: {user_agent[:50]}...")
+
+        # Store request info for potential security analysis
+        g.request_start_time = time.time()
+        g.client_ip = client_ip
+        g.user_agent = user_agent
+
+    @app.after_request
+    def log_response_info(response):
+        """Log response information and timing"""
+        if hasattr(g, 'request_start_time'):
+            duration = time.time() - g.request_start_time
+            status_code = response.status_code
+            client_ip = getattr(g, 'client_ip', 'unknown')
+
+            # Log slow requests or errors
+            if duration > 5.0:  # 5 seconds
+                logger.warning(f"SLOW_REQUEST: {request.method} {request.path} took {duration:.2f}s from {client_ip}")
+
+            if status_code >= 400:
+                logger.warning(f"ERROR_RESPONSE: {status_code} for {request.method} {request.path} from {client_ip}")
+
+        return response
 
     # Register routes
     register_routes(app)

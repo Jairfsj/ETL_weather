@@ -1,5 +1,9 @@
 import logging
-from flask import Blueprint, jsonify, request, current_app
+import time
+import functools
+import base64
+from collections import defaultdict
+from flask import Blueprint, jsonify, request, current_app, g, make_response
 from typing import Dict, Any
 from datetime import datetime, timedelta
 import pandas as pd
@@ -11,6 +15,180 @@ from ..services.weatherapi_service import WeatherAPIService
 
 logger = logging.getLogger(__name__)
 weather_bp = Blueprint('weather', __name__)
+
+# Security and validation utilities
+def validate_limit_param(limit_str: str, min_val: int = 1, max_val: int = 1000) -> int:
+    """Validate and sanitize limit parameter"""
+    try:
+        limit = int(limit_str)
+        return min(max(limit, min_val), max_val)
+    except (ValueError, TypeError):
+        return min_val
+
+def validate_hours_param(hours_str: str) -> int:
+    """Validate hours parameter for chart data"""
+    try:
+        hours = int(hours_str)
+        return min(max(hours, 1), 168)  # Max 1 week
+    except (ValueError, TypeError):
+        return 24  # Default to 24 hours
+
+def validate_date_param(date_str: str) -> str:
+    """Validate and sanitize date parameter"""
+    import re
+    # Only allow YYYY-MM-DD format
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
+        raise ValueError("Invalid date format. Use YYYY-MM-DD")
+
+    # Try to parse as actual date to ensure validity
+    try:
+        datetime.strptime(date_str, '%Y-%m-%d').date()
+        return date_str
+    except ValueError:
+        raise ValueError("Invalid date value. Use YYYY-MM-DD")
+
+def sanitize_string_param(param: str, max_length: int = 100) -> str:
+    """Sanitize string parameters to prevent injection"""
+    if not param:
+        return ""
+    # Remove potentially dangerous characters
+    import re
+    sanitized = re.sub(r'[^\w\s\-_]', '', param)[:max_length]
+    return sanitized.strip()
+
+# Security decorator
+def add_security_headers(response):
+    """Add modern security headers to response"""
+    # Prevent clickjacking
+    response.headers['X-Frame-Options'] = 'DENY'
+
+    # Prevent MIME type sniffing
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+
+    # Enable XSS protection
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+
+    # Referrer policy
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+
+    # Content Security Policy (restrictive)
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.plot.ly; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none';"
+    )
+
+    # HSTS (HTTP Strict Transport Security) - only for HTTPS
+    # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+    # Remove server header for security
+    response.headers.pop('Server', None)
+
+    return response
+
+# Rate limiting implementation
+class RateLimiter:
+    """Simple in-memory rate limiter"""
+
+    def __init__(self):
+        self.requests = defaultdict(list)
+        self.max_requests = 100  # requests per window
+        self.window_seconds = 60  # 1 minute window
+
+    def is_allowed(self, client_ip: str) -> bool:
+        """Check if request is allowed"""
+        now = time.time()
+        client_requests = self.requests[client_ip]
+
+        # Remove old requests outside the window
+        client_requests[:] = [req_time for req_time in client_requests
+                            if now - req_time < self.window_seconds]
+
+        # Check if under limit
+        if len(client_requests) >= self.max_requests:
+            return False
+
+        # Add current request
+        client_requests.append(now)
+        return True
+
+# Global rate limiter instance
+rate_limiter = RateLimiter()
+
+def check_rate_limit():
+    """Rate limiting middleware"""
+    client_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'unknown')
+
+    if not rate_limiter.is_allowed(client_ip):
+        logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+        return jsonify({
+            'error': 'Too many requests. Please try again later.',
+            'retry_after': rate_limiter.window_seconds
+        }), 429
+
+    return None
+
+# Basic authentication for admin endpoints
+def check_basic_auth():
+    """Check basic authentication for sensitive endpoints"""
+    auth = request.headers.get('Authorization')
+    if not auth or not auth.startswith('Basic '):
+        return False
+
+    try:
+        # Decode base64 credentials
+        credentials = base64.b64decode(auth[6:]).decode('utf-8')
+        username, password = credentials.split(':', 1)
+
+        # Check against environment variables or config
+        expected_username = current_app.config.get('ADMIN_USERNAME', 'admin')
+        expected_password = current_app.config.get('ADMIN_PASSWORD', 'admin123')
+
+        return username == expected_username and password == expected_password
+    except Exception as e:
+        logger.warning(f"Basic auth parsing error: {e}")
+        return False
+
+def require_auth(f):
+    """Decorator to require basic authentication"""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not check_basic_auth():
+            response = jsonify({
+                'error': 'Authentication required',
+                'message': 'This endpoint requires basic authentication'
+            })
+            response.status_code = 401
+            response.headers['WWW-Authenticate'] = 'Basic realm="Weather API Admin"'
+            return response
+        return f(*args, **kwargs)
+    return decorated_function
+
+def secure_endpoint(f):
+    """Decorator that applies rate limiting and security headers"""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check rate limit
+        rate_limit_response = check_rate_limit()
+        if rate_limit_response:
+            return rate_limit_response
+
+        # Execute the endpoint
+        response = f(*args, **kwargs)
+
+        # Apply security headers
+        if hasattr(response, 'headers'):
+            return add_security_headers(response)
+        else:
+            # Convert to response object if needed
+            response_obj = make_response(response)
+            return add_security_headers(response_obj)
+
+    return decorated_function
 
 
 def get_db_service() -> DatabaseService:
@@ -34,6 +212,7 @@ def get_open_meteo_service() -> OpenMeteoService:
 
 
 @weather_bp.route('/health')
+@secure_endpoint
 def health_check():
     """Health check endpoint"""
     try:
@@ -43,7 +222,7 @@ def health_check():
         return jsonify({
             'status': 'healthy' if db_healthy else 'unhealthy',
             'database': 'connected' if db_healthy else 'disconnected',
-            'timestamp': '2024-01-01T00:00:00Z'  # Would use datetime.utcnow() in real implementation
+            'timestamp': datetime.now().isoformat() + 'Z'
         }), 200 if db_healthy else 503
 
     except Exception as e:
@@ -55,11 +234,12 @@ def health_check():
 
 
 @weather_bp.route('/latest')
+@secure_endpoint
 def get_latest_weather():
     """Get latest weather data"""
     try:
-        limit = request.args.get('limit', default=100, type=int)
-        limit = min(max(limit, 1), 1000)  # Clamp between 1 and 1000
+        limit_param = request.args.get('limit', '100')
+        limit = validate_limit_param(limit_param)
 
         db_service = get_db_service()
         weather_data = db_service.get_weather_data(limit=limit)
@@ -83,6 +263,7 @@ def get_latest_weather():
 
 
 @weather_bp.route('/current')
+@secure_endpoint
 def get_current_weather():
     """Get current (latest) weather conditions"""
     try:
@@ -115,6 +296,8 @@ def get_current_weather():
 
 
 @weather_bp.route('/stats')
+@require_auth
+@secure_endpoint
 def get_weather_stats():
     """Get weather statistics"""
     try:
@@ -139,11 +322,12 @@ def get_weather_stats():
 
 
 @weather_bp.route('/chart-data')
+@secure_endpoint
 def get_chart_data():
     """Get data formatted for charts"""
     try:
-        hours = request.args.get('hours', default=24, type=int)
-        hours = min(max(hours, 1), 168)  # Clamp between 1 and 168 hours (1 week)
+        hours_param = request.args.get('hours', '24')
+        hours = validate_hours_param(hours_param)
 
         db_service = get_db_service()
         weather_data = db_service.get_weather_data(limit=hours * 2)  # Get more data than needed
@@ -201,6 +385,7 @@ def internal_error(error):
 # AerisWeather API endpoints
 
 @weather_bp.route('/aeris/montreal')
+@secure_endpoint
 def get_aeris_montreal_weather():
     """Get current Montreal weather data from AerisWeather API"""
     try:
@@ -228,6 +413,7 @@ def get_aeris_montreal_weather():
 
 
 @weather_bp.route('/aeris/montreal/csv')
+@secure_endpoint
 def download_aeris_montreal_csv():
     """Download Montreal weather data as CSV from AerisWeather API"""
     try:
@@ -264,6 +450,7 @@ def download_aeris_montreal_csv():
 
 
 @weather_bp.route('/aeris/locations')
+@secure_endpoint
 def get_aeris_multiple_locations():
     """Get weather data for multiple locations from AerisWeather API"""
     try:
@@ -307,6 +494,7 @@ def get_aeris_multiple_locations():
 # AerisWeather Historical Data endpoints
 
 @weather_bp.route('/aeris/historical/<date>')
+@secure_endpoint
 def get_aeris_historical_date(date):
     """Get historical weather data for a specific date from AerisWeather API"""
     try:
@@ -355,6 +543,7 @@ def get_aeris_historical_date(date):
 
 
 @weather_bp.route('/aeris/historical')
+@secure_endpoint
 def get_aeris_historical_range():
     """Get historical weather data for a date range from AerisWeather API"""
     try:
@@ -418,6 +607,7 @@ def get_aeris_historical_range():
 
 
 @weather_bp.route('/aeris/historical/csv')
+@secure_endpoint
 def generate_aeris_historical_csvs():
     """Generate CSV files for historical weather data"""
     try:
@@ -495,6 +685,7 @@ def generate_aeris_historical_csvs():
 # Open-Meteo API endpoints (Melhor opção para monitoramento semi-real)
 
 @weather_bp.route('/openmeteo/current')
+@secure_endpoint
 def get_openmeteo_current():
     """Get current weather data from Open-Meteo API (best for real-time monitoring)"""
     try:
@@ -523,6 +714,7 @@ def get_openmeteo_current():
 
 
 @weather_bp.route('/openmeteo/forecast')
+@secure_endpoint
 def get_openmeteo_forecast():
     """Get weather forecast from Open-Meteo API"""
     try:
@@ -554,6 +746,7 @@ def get_openmeteo_forecast():
 
 
 @weather_bp.route('/openmeteo/historical')
+@secure_endpoint
 def get_openmeteo_historical():
     """Get historical weather data from Open-Meteo API"""
     try:
@@ -622,6 +815,7 @@ def get_openmeteo_historical():
 
 
 @weather_bp.route('/openmeteo/monitoring')
+@secure_endpoint
 def get_openmeteo_monitoring():
     """Get weekly monitoring data (3-4 times per week) from Open-Meteo API"""
     try:
@@ -663,6 +857,7 @@ def get_openmeteo_monitoring():
 
 
 @weather_bp.route('/openmeteo/historical/csv')
+@secure_endpoint
 def generate_openmeteo_historical_csv():
     """Generate CSV file with historical weather data from Open-Meteo"""
     try:
@@ -730,6 +925,7 @@ def generate_openmeteo_historical_csv():
 # Long-term monitoring endpoints (2024-2026)
 
 @weather_bp.route('/openmeteo/long-term')
+@secure_endpoint
 def get_openmeteo_long_term():
     """Get long-term monitoring data (2024-2026)"""
     try:
@@ -768,6 +964,7 @@ def get_openmeteo_long_term():
 
 
 @weather_bp.route('/openmeteo/seasonal-analysis')
+@secure_endpoint
 def get_openmeteo_seasonal_analysis():
     """Get seasonal analysis of climate data"""
     try:
@@ -802,6 +999,7 @@ def get_openmeteo_seasonal_analysis():
 
 
 @weather_bp.route('/openmeteo/yearly-trends')
+@secure_endpoint
 def get_openmeteo_yearly_trends():
     """Get yearly trends analysis"""
     try:
@@ -836,6 +1034,8 @@ def get_openmeteo_yearly_trends():
 
 
 @weather_bp.route('/monitoring/status')
+@require_auth
+@secure_endpoint
 def get_monitoring_status():
     """Get current monitoring system status"""
     try:
@@ -897,6 +1097,7 @@ def get_weatherapi_service() -> WeatherAPIService:
 
 
 @weather_bp.route('/weatherapi/current')
+@secure_endpoint
 def get_weatherapi_current():
     """Get current weather from WeatherAPI (real-time)"""
     try:
@@ -928,6 +1129,7 @@ def get_weatherapi_current():
 
 
 @weather_bp.route('/weatherapi/forecast')
+@secure_endpoint
 def get_weatherapi_forecast():
     """Get forecast from WeatherAPI"""
     try:
@@ -961,6 +1163,7 @@ def get_weatherapi_forecast():
 
 
 @weather_bp.route('/weatherapi/realtime')
+@secure_endpoint
 def get_weatherapi_realtime():
     """Get complete real-time monitoring data from WeatherAPI"""
     try:
