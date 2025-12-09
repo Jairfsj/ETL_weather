@@ -33,9 +33,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
-        # Se for requisição para a raiz, servir a landing page
+        # Se for requisição para a raiz, servir a landing page simplificada
         if self.path == '/' or self.path == '':
-            self.path = '/landing_page_standalone.html'
+            self.path = '/landing_page_simple.html'
 
         return super().do_GET()
 
@@ -44,7 +44,7 @@ def main():
     print("=" * 50)
     print(f"📁 Diretório: {DIRECTORY}")
     print(f"🌐 URL: http://localhost:{PORT}")
-    print(f"📄 Arquivo: landing_page_standalone.html")
+    print(f"📄 Arquivo: landing_page_simple.html (versão otimizada)")
     print()
     print("Funcionalidades:")
     print("✅ Landing page com design moderno")

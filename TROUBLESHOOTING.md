@@ -295,3 +295,4 @@ docker --version >> diagnostics.txt
 ---
 
 **Se seguir estes passos e ainda tiver problemas, verifique se há algum proxy corporativo ou VPN interferindo na conexão local.**
+

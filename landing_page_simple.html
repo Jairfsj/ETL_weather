@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌤️ Montreal Climate Monitor - Sistema ETL Weather</title>
+
+    <!-- Meta Tags -->
+    <meta name="description" content="Sistema de monitoramento climático de Montreal - Dados em tempo real e históricos">
+    <meta name="keywords" content="Montreal, clima, weather, ETL, monitoramento, temperatura">
+
+    <!-- Favicon simples -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #22c55e;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .feature-list li:before {
+            content: "✅";
+            margin-right: 10px;
+            color: #22c55e;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .alert {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .alert h4 {
+            margin-bottom: 10px;
+            color: #92400e;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌤️ Montreal Climate Monitor</h1>
+            <p>Sistema ETL completo para monitoramento climático de Montreal</p>
+            <div class="status">✅ Sistema Ativo - Monitoramento 2025-2027</div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- Sistema Overview -->
+            <div class="card">
+                <h3>🚀 Sistema ETL Weather</h3>
+                <p>Sistema completo de monitoramento climático com:</p>
+                <ul class="feature-list">
+                    <li>APIs gratuitas (WeatherAPI + Open-Meteo)</li>
+                    <li>Dados em tempo real (15min updates)</li>
+                    <li>Monitoramento histórico 2025-2027</li>
+                    <li>Dashboard interativo multilíngue</li>
+                    <li>Relatórios automáticos mensais</li>
+                    <li>Armazenamento PostgreSQL</li>
+                </ul>
+            </div>
+
+            <!-- APIs Disponíveis -->
+            <div class="card">
+                <h3>🔌 APIs Integradas</h3>
+                <p>Duas APIs gratuitas para máxima confiabilidade:</p>
+                <div style="margin: 15px 0;">
+                    <strong>⚡ WeatherAPI (Tempo Real)</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>1.000.000 chamadas/mês gratuitas</li>
+                        <li>Atualização a cada 15 minutos</li>
+                        <li>Dados oficiais de estações</li>
+                        <li>Alertas meteorológicos</li>
+                    </ul>
+                </div>
+                <div style="margin: 15px 0;">
+                    <strong>📚 Open-Meteo (Histórico)</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Sem limite de chamadas</li>
+                        <li>Dados históricos de 60 anos</li>
+                        <li>Análises sazonais/anuais</li>
+                        <li>Previsões gratuitas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Como Usar -->
+            <div class="card">
+                <h3>📋 Como Usar</h3>
+                <p>Inicie o sistema em poucos passos:</p>
+
+                <h4>1. Dashboard Completo</h4>
+                <div class="code-block">
+docker compose up -d<br>
+# Acesse: http://localhost:5000/dashboard
+                </div>
+
+                <h4>2. Landing Page (Esta página)</h4>
+                <div class="code-block">
+python serve_landing_page.py<br>
+# Acesse: http://localhost:8080
+                </div>
+
+                <h4>3. Monitoramento Contínuo</h4>
+                <div class="code-block">
+python continuous_monitoring.py<br>
+# Coleta automática 3x/semana
+                </div>
+            </div>
+
+            <!-- Endpoints da API -->
+            <div class="card">
+                <h3>🔗 APIs Disponíveis</h3>
+                <p>Endpoints para integração:</p>
+
+                <h4>WeatherAPI (Tempo Real)</h4>
+                <div style="font-size: 0.9em; margin: 10px 0;">
+                    <code>/api/v1/weather/weatherapi/current</code><br>
+                    <code>/api/v1/weather/weatherapi/forecast</code><br>
+                    <code>/api/v1/weather/weatherapi/realtime</code>
+                </div>
+
+                <h4>Open-Meteo (Histórico)</h4>
+                <div style="font-size: 0.9em; margin: 10px 0;">
+                    <code>/api/v1/weather/openmeteo/long-term</code><br>
+                    <code>/api/v1/weather/openmeteo/monitoring</code><br>
+                    <code>/api/v1/weather/openmeteo/historical</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Section -->
+        <div class="alert">
+            <h4>⚠️ Importante</h4>
+            <p><strong>Para dados reais do WeatherAPI:</strong> Cadastre-se gratuitamente em <a href="https://www.weatherapi.com/" target="_blank">WeatherAPI.com</a> e configure a chave no arquivo <code>.env</code></p>
+            <p><strong>Monitoramento 2025-2027:</strong> Sistema configurado para coletar dados de 07/12/2025 até 01/01/2027</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://localhost:5000/dashboard" target="_blank" class="btn">📊 Abrir Dashboard</a>
+            <a href="http://localhost:5000/api/v1/weather/health" target="_blank" class="btn">🏥 Verificar API</a>
+            <button onclick="testConnection()" class="btn btn-secondary">🔍 Testar Conexão</button>
+        </div>
+
+        <!-- Test Results -->
+        <div id="test-results" style="display: none;">
+            <div class="card">
+                <h3>🧪 Resultado do Teste</h3>
+                <div id="test-output"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🌤️ Sistema ETL Weather - Monitoramento Climático Montreal 2025-2027</p>
+            <p>🚀 Desenvolvido com APIs gratuitas e tecnologia de ponta</p>
+        </div>
+    </div>
+
+    <script>
+        async function testConnection() {
+            const resultsDiv = document.getElementById('test-results');
+            const outputDiv = document.getElementById('test-output');
+
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>🔄 Testando conexões...</p>';
+
+            try {
+                // Testar API Health
+                const healthResponse = await fetch('http://127.0.0.1:5000/api/v1/weather/health');
+                const healthData = await healthResponse.json();
+
+                let results = '<h4>✅ Teste de Conectividade</h4>';
+
+                if (healthResponse.ok) {
+                    results += '<p>✅ API Health: Sistema funcionando</p>';
+                    results += '<p>📊 Status: ' + healthData.status + '</p>';
+                } else {
+                    results += '<p>❌ API Health: Problema detectado</p>';
+                }
+
+                // Testar WeatherAPI
+                try {
+                    const weatherResponse = await fetch('http://127.0.0.1:5000/api/v1/weather/weatherapi/current');
+                    if (weatherResponse.ok) {
+                        results += '<p>✅ WeatherAPI: Disponível</p>';
+                    } else {
+                        results += '<p>⚠️ WeatherAPI: Resposta esperada (configurar chave)</p>';
+                    }
+                } catch (e) {
+                    results += '<p>⚠️ WeatherAPI: Sistema não iniciado</p>';
+                }
+
+                outputDiv.innerHTML = results;
+
+            } catch (error) {
+                outputDiv.innerHTML = '<h4>❌ Erro no Teste</h4><p>Erro: ' + error.message + '</p><p>💡 Certifique-se de que os containers estão rodando: <code>docker compose up -d</code></p>';
+            }
+        }
+
+        // Auto-teste inicial
+        window.addEventListener('load', function() {
+            console.log('🌤️ Montreal Climate Monitor - Landing Page Carregada');
+        });
+    </script>
+</body>
+</html>
+

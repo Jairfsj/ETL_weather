@@ -266,3 +266,4 @@ class WeatherAPIService:
             "coordinates": {"lat": 45.5019, "lon": -73.5673},
             "timezone": "America/Toronto"
         }
+
